@@ -36,8 +36,6 @@
         "notification.operation",
 	"notification.management",
         "security",
-	"settings",
-	"system",
         "devmode.query",
 	"preferences.application",
         "preferences.system",
