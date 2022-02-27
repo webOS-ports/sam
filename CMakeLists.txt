@@ -115,6 +115,12 @@ install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION ${WEBOS_INSTALL_SBINDIR})
 # sam conf files
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/files/conf/sam-conf.json.in ${CMAKE_CURRENT_BINARY_DIR}/files/conf/sam-conf.json)
 
+webos_configure_source_files(lib_in_scripts
+    files/scripts/sam.sh
+)
+
+install(PROGRAMS ${lib_in_scripts} DESTINATION ${WEBOS_INSTALL_BASE_LIBDIR}/systemd/system/scripts)
+
 file(GLOB_RECURSE SAM_CONF_FILES ${CMAKE_CURRENT_BINARY_DIR}/files/conf/*)
 install(FILES ${SAM_CONF_FILES} DESTINATION ${WEBOS_INSTALL_WEBOS_SYSCONFDIR})
 
