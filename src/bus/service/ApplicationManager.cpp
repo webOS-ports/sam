@@ -545,8 +545,9 @@ void ApplicationManager::getAppBasePath(LunaTaskPtr lunaTask)
         LunaTaskList::getInstance().removeAfterReply(lunaTask);
         return;
     }
-    if (lunaTask->getCaller() != appId) {
-        lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Not allowed. Allow only for the info of calling app itself.");
+    AppDescriptionPtr appDescFrom = AppDescriptionList::getInstance().getByAppId(lunaTask->getCaller());
+    if (lunaTask->getCaller() != appId && (!appDescFrom || !appDescFrom->isTrusted())) {
+        lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Not allowed. Allow only for the info of calling app itself, or from trusted apps.");
         LunaTaskList::getInstance().removeAfterReply(lunaTask);
         return;
     }
