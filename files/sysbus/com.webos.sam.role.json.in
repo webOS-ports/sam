@@ -28,7 +28,8 @@
                 "com.webos.service.tvpower",
                 "com.palm.webappmanager",
                 "com.webos.settingsservice",
-                "com.webos.surfacemanager"
+                "com.webos.surfacemanager",
+                "com.webos.lunasend-*"
             ]
         }
     ]
