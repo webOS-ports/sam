@@ -291,6 +291,13 @@ public:
         return visible;
     }
 
+    bool useLuneOSStyle() const
+    {
+        bool requestLuneOSStyle = false;
+        JValueUtil::getValue(m_appinfo, "useLuneOSStyle", requestLuneOSStyle);
+        return requestLuneOSStyle;
+    }
+
 private:
     static const vector<string> PROPS_PROHIBITED;
     static const vector<string> PROPS_IMAGES;

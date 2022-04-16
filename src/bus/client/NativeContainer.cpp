@@ -193,6 +193,11 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
     runningApp->getLinuxProcess().addEnv("DISPLAY_ID", std::to_string(runningApp->getDisplayId()));
     runningApp->getLinuxProcess().addEnv("LS2_NAME", Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
 
+    if (AppType::AppType_Native_Qml == type) {
+        if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
+            runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "LuneOS");
+    }
+
     runningApp->setLS2Name(Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
     if (RuntimeInfo::getInstance().getUser().empty())
         runningApp->getLinuxProcess().openStdFile(Logger::format("/var/log/%s-%d", runningApp->getAppId().c_str(), s_instanceCounter++));
