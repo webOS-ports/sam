@@ -297,6 +297,13 @@ public:
         JValueUtil::getValue(m_appinfo, "useLuneOSStyle", requestLuneOSStyle);
         return requestLuneOSStyle;
     }
+    
+    bool hasNoWindow() const
+    {
+        bool requestNoWindow = false;
+        JValueUtil::getValue(m_appinfo, "noWindow", requestNoWindow);
+        return requestNoWindow;
+    }
 
 private:
     static const vector<string> PROPS_PROHIBITED;

@@ -204,6 +204,10 @@ void WAM::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
         requestPayload.put("keepAlive", true);
     }
 
+    if (runningApp->getLifeStatus() < LifeStatus::LifeStatus_LAUNCHING && runningApp->getLaunchPoint()->getAppDesc()->hasNoWindow()) {
+        requestPayload.put("noWindow", true);
+    }
+
     if (runningApp->isFirstLaunch() && !runningApp->getPreload().empty()) {
         runningApp->setLifeStatus(LifeStatus::LifeStatus_PRELOADING);
         requestPayload.put("preload", runningApp->getPreload());
