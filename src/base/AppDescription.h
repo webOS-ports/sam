@@ -237,6 +237,13 @@ public:
             return true;
         return false;
     }
+    
+    bool isTrusted()
+    {
+        string trustLevel = "";
+        JValueUtil::getValue(m_appinfo, "trustLevel", trustLevel);
+        return (trustLevel == "trusted");
+    }
 
     bool isRemovable() const
     {
@@ -282,6 +289,20 @@ public:
         bool visible = true;
         JValueUtil::getValue(m_appinfo, "visible", visible);
         return visible;
+    }
+
+    bool useLuneOSStyle() const
+    {
+        bool requestLuneOSStyle = false;
+        JValueUtil::getValue(m_appinfo, "useLuneOSStyle", requestLuneOSStyle);
+        return requestLuneOSStyle;
+    }
+    
+    bool hasNoWindow() const
+    {
+        bool requestNoWindow = false;
+        JValueUtil::getValue(m_appinfo, "noWindow", requestNoWindow);
+        return requestNoWindow;
     }
 
 private:
