@@ -29,7 +29,39 @@
                 "com.palm.webappmanager",
                 "com.webos.settingsservice",
                 "com.webos.surfacemanager",
-                "com.webos.lunasend-*"
+                "com.webos.surfacemanager-cardshell",
+                "com.webos.lunasend-*",
+                "com.palm.applicationManager",
+                "com.palm.universalsearch",
+                "com.palm.systemui-*"
+            ]
+        },
+        {
+            "service":"com.webos.service.applicationManager",
+            "outbound":[
+                "*",
+                "com.webos.appInstallService",
+                "com.webos.booster",
+                "com.webos.bootManager",
+                "com.webos.memorymanager",
+                "com.webos.notification",
+                "com.webos.service.attachedstoragemanager",
+                "com.webos.service.bus",
+                "com.webos.service.config",
+                "com.webos.service.db",
+                "com.webos.service.downloadmanager",
+                "com.webos.service.power2",
+                "com.webos.service.sdx",
+                "com.webos.service.sm",
+                "com.webos.service.tvpower",
+                "com.palm.webappmanager",
+                "com.webos.settingsservice",
+                "com.webos.surfacemanager",
+                "com.webos.surfacemanager-cardshell",
+                "com.webos.lunasend-*",
+                "com.palm.applicationManager",
+                "com.palm.universalsearch",
+                "com.palm.systemui-*"
             ]
         }
     ]
