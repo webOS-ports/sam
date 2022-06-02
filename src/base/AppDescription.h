@@ -233,7 +233,8 @@ public:
     {
         if (m_appId.find("com.palm.") == 0 ||
             m_appId.find("com.webos.") == 0 ||
-            m_appId.find("com.lge.") == 0)
+            m_appId.find("com.lge.") == 0 ||
+            m_appId.find("org.webosports.") == 0)
             return true;
         return false;
     }
