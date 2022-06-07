@@ -195,7 +195,7 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 
     if (AppType::AppType_Native_Qml == type) {
         if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
-            runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "LuneOS");
+            runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "QtQuick.Controls.LuneOS");
     }
 
     runningApp->setLS2Name(Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
