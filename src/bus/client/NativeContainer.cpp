@@ -206,6 +206,13 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
             runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "QtQuick.Controls.LuneOS");
     }
 
+    if (AppType::AppType_Native == type) {
+        Logger::info(getClassName(), __FUNCTION__, runningApp->getAppId(), "Adding LuneOS environment");
+        if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
+            runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "QtQuick.Controls.LuneOS");
+        runningApp->getLinuxProcess().addEnv("QT_QPA_PLATFORM", "wayland-egl");
+    }
+
     runningApp->setLS2Name(Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
     if (RuntimeInfo::getInstance().getUser().empty())
         runningApp->getLinuxProcess().openStdFile(Logger::format("/var/log/%s-%d", runningApp->getAppId().c_str(), s_instanceCounter++));
