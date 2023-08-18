@@ -200,6 +200,7 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
     runningApp->getLinuxProcess().addEnv("LS2_NAME", Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
     // force the use of the webos waylandinputcontext plugin (see above)
     runningApp->getLinuxProcess().addEnv("QT_IM_MODULE", "wayland-webos");
+    runningApp->getLinuxProcess().addEnv("QT_WAYLAND_SHELL_INTEGRATION", "webos");
 
     if (AppType::AppType_Native_Qml == type) {
         if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
