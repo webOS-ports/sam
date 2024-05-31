@@ -26,7 +26,7 @@ include(webOS/webOS)
 
 webos_modules_init(1 0 0 QUALIFIER RC4)
 webos_component(2 0 0)
-webos_add_compiler_flags(ALL -Wall -std=gnu++0x)
+webos_add_compiler_flags(ALL -Wall -std=c++17)
 webos_add_compiler_flags(ALL -DBOOST_SIGNALS_NO_DEPRECATION_WARNING)
 
 add_definitions(-DLOGGER_ENABLED)
