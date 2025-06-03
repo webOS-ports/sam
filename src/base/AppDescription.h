@@ -239,6 +239,13 @@ public:
         return false;
     }
 
+    bool isTrusted()
+    {
+        string trustLevel = "";
+        JValueUtil::getValue(m_appinfo, "trustLevel", trustLevel);
+        return (trustLevel == "trusted");
+    }
+
     bool isRemovable() const
     {
         bool removable = true;
