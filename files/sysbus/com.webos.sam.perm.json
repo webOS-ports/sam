@@ -11,5 +11,8 @@
         "settings.query",
         "settings.management",
         "webapplication.management"
+    ],
+    "com.webos.surfacemanager-cardshell" : [
+        "application.launcher"
     ]
 }
