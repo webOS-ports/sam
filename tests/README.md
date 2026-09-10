@@ -52,15 +52,31 @@ regression shows up as a failing test rather than as a field report:
 | `AnchorLocalePathTest` | Both localized-appinfo conventions, which wins when both resolve, and that the result is never absolute. |
 | `AppDescriptionScanTest` | Version parsing against a third-party `appinfo.json`, including versions that used to throw out of the scan. |
 | `AppDescriptionCompareTest` | Version ordering and the `appLocation` tiebreak that a self-comparison had disabled. |
+| `SAMConfLocaleTest` | `setLocale()` round-trip, persistence, reload, and that a locale removed from the config reads back as `""` rather than as the previous value. |
+| `LocalizedAppinfoTest` | Which `resources/<language>[/<script>][/<region>]` overlays a scan applies, and that a legacy relative `main` is re-anchored exactly once. |
 
 Verified by mutation: reintroducing each original defect makes the
-corresponding test fail.
+corresponding test fail. One case does **not** hold, and is called out in the
+test itself — removing the "skip empty locale components" change leaves every
+test green, because `resources/en//` and `resources/en/` are the same directory
+to POSIX and re-applying an overlay is idempotent. That change is tidiness
+rather than behaviour, so there is nothing to regress.
 
 ## Not covered
 
 The bus clients (`WAM`, `LSM`, `ApplicationManager`, ...) are singletons that
 register on luna-service in their constructors, so they need a live bus or a
-seam that does not exist yet. `SAMConf`'s locale accessors are likewise
-untested: showing the stale-value behaviour needs `setLocale()`, which writes
-its config out. Both are worth revisiting if these classes ever grow a
-constructor that takes its dependencies.
+seam that does not exist yet. They are worth revisiting if these classes ever
+grow a constructor that takes its dependencies.
+
+## Two things to know before extending this
+
+`SAMConfLocaleTest` restores `$HOME` and re-initializes `RuntimeInfo` on
+teardown but deliberately does **not** re-initialize `SAMConf`.
+`loadReadWriteConf()` creates `$HOME/.config/sam-conf.json` when it cannot parse
+one, so re-reading it with the real `$HOME` back in place would write into the
+developer's home directory.
+
+The singletons live for the whole process, so a fixture that changes global
+state has to put it back. `SAMConfLocaleTest` resets the locale to empty on
+teardown; the `AppDescription` scan tests rely on that.

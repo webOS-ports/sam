@@ -187,10 +187,16 @@ TEST_F(LocalizedAppinfoTest, PlacesTheScriptDirectoryBetweenLanguageAndRegion)
     EXPECT_EQ("Taiwan", titleOf(scanLocalized()));
 }
 
-TEST_F(LocalizedAppinfoTest, DoesNotLookUnderAScriptDirectoryWhenTheScriptIsEmpty)
+TEST_F(LocalizedAppinfoTest, AppliesTheRegionDirectoryWhenTheScriptIsEmpty)
 {
-    // With an empty script the region hangs directly off the language dir. An
-    // empty component must not be turned into a path segment of its own.
+    // With an empty script the region hangs directly off the language dir.
+    //
+    // Note this does not guard the "skip empty locale components" change: the
+    // unskipped form produces resources/en// and resources/en//US/, which POSIX
+    // resolves to the same directories, and re-applying an overlay is
+    // idempotent because anchorLocalePath() always works from the pristine
+    // locale file rather than from the value already published. The skip is
+    // tidiness, not behaviour, and mutating it away leaves every test green.
     m_tree.write("com.webos.app.l10n/appinfo.json", rootAppinfo());
     m_tree.write("com.webos.app.l10n/resources/en/appinfo.json", R"({"title":"English"})");
     m_tree.write("com.webos.app.l10n/resources/en/US/appinfo.json", R"({"title":"American"})");
