@@ -74,7 +74,7 @@ public:
 
     static const char* METHOD_MANAGER_INFO;
 
-    virtual ~ApplicationManager();
+    virtual ~ApplicationManager() override;
 
     virtual bool attach(GMainLoop* gml);
     virtual void detach();
@@ -148,17 +148,17 @@ private:
 
     map<string, LunaApiHandler> m_APIHandlers;
 
-    LS::SubscriptionPoint* m_getAppLifeEvents;
-    LS::SubscriptionPoint* m_getAppLifeStatus;
-    LS::SubscriptionPoint* m_getForgroundAppInfo;
-    LS::SubscriptionPoint* m_getForgroundAppInfoExtraInfo;
-    LS::SubscriptionPoint* m_listLaunchPointsPoint;
-    LS::SubscriptionPoint* m_listAppsPoint;
-    LS::SubscriptionPoint* m_listAppsCompactPoint;
-    LS::SubscriptionPoint* m_listDevAppsPoint;
-    LS::SubscriptionPoint* m_listDevAppsCompactPoint;
-    LS::SubscriptionPoint* m_running;
-    LS::SubscriptionPoint* m_runningDev;
+    LS::SubscriptionPoint* m_getAppLifeEvents = nullptr;
+    LS::SubscriptionPoint* m_getAppLifeStatus = nullptr;
+    LS::SubscriptionPoint* m_getForgroundAppInfo = nullptr;
+    LS::SubscriptionPoint* m_getForgroundAppInfoExtraInfo = nullptr;
+    LS::SubscriptionPoint* m_listLaunchPointsPoint = nullptr;
+    LS::SubscriptionPoint* m_listAppsPoint = nullptr;
+    LS::SubscriptionPoint* m_listAppsCompactPoint = nullptr;
+    LS::SubscriptionPoint* m_listDevAppsPoint = nullptr;
+    LS::SubscriptionPoint* m_listDevAppsCompactPoint = nullptr;
+    LS::SubscriptionPoint* m_running = nullptr;
+    LS::SubscriptionPoint* m_runningDev = nullptr;
 
     bool m_enableSubscription;
 

@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     Logger::info(CLASS_NAME, __FUNCTION__, "Start SAM process");
 
     // tracking sender if we get some signal
-    struct sigaction act;
+    struct sigaction act = {};
     sigemptyset(&act.sa_mask);
     act.sa_sigaction = signal_handler;
     act.sa_flags = SA_SIGINFO;

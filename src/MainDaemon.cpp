@@ -111,8 +111,8 @@ void MainDaemon::stop()
 
 void MainDaemon::onGetBootStatus(const JValue& subscriptionPayload)
 {
-    bool coreBootDone;
-    if (!JValueUtil::getValue(subscriptionPayload, "signals", "core-boot-done", coreBootDone) && !coreBootDone) {
+    bool coreBootDone = false;
+    if (!JValueUtil::getValue(subscriptionPayload, "signals", "core-boot-done", coreBootDone) || !coreBootDone) {
         return;
     }
     m_isCBDGenerated = true;

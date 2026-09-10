@@ -29,7 +29,9 @@ bool AppInstallService::onStatus(LSHandle* sh, LSMessage* message, void* context
     if (subscriptionPayload.isNull())
         return true;
 
-    int statusValue;
+    // Not a status any case below matches, so an absent key falls through to
+    // default instead of being read uninitialized.
+    int statusValue = -1;
     string id = "";
     string packageId = "";
 
@@ -41,7 +43,6 @@ bool AppInstallService::onStatus(LSHandle* sh, LSMessage* message, void* context
         return true;
     }
     string appId = packageId.empty() ? id : packageId;
-    AppDescriptionPtr appDesc = nullptr;
 
     switch (statusValue) {
     case 22: // Install operation is cancelled

@@ -214,6 +214,8 @@ bool ApplicationManager::attach(GMainLoop* gml)
         m_compat1.attachToLoop(gml);
         m_compat2.attachToLoop(gml);
     } catch(exception& e) {
+        Logger::error(getClassName(), __FUNCTION__, e.what());
+        return false;
     }
     return true;
 }
@@ -222,17 +224,17 @@ void ApplicationManager::detach()
 {
     m_APIHandlers.clear();
 
-    delete m_getAppLifeEvents;
-    delete m_getAppLifeStatus;
-    delete m_getForgroundAppInfo;
-    delete m_getForgroundAppInfoExtraInfo;
-    delete m_listLaunchPointsPoint;
-    delete m_listAppsPoint;
-    delete m_listAppsCompactPoint;
-    delete m_listDevAppsPoint;
-    delete m_listDevAppsCompactPoint;
-    delete m_running;
-    delete m_runningDev;
+    delete m_getAppLifeEvents;              m_getAppLifeEvents = nullptr;
+    delete m_getAppLifeStatus;              m_getAppLifeStatus = nullptr;
+    delete m_getForgroundAppInfo;           m_getForgroundAppInfo = nullptr;
+    delete m_getForgroundAppInfoExtraInfo;  m_getForgroundAppInfoExtraInfo = nullptr;
+    delete m_listLaunchPointsPoint;         m_listLaunchPointsPoint = nullptr;
+    delete m_listAppsPoint;                 m_listAppsPoint = nullptr;
+    delete m_listAppsCompactPoint;          m_listAppsCompactPoint = nullptr;
+    delete m_listDevAppsPoint;              m_listDevAppsPoint = nullptr;
+    delete m_listDevAppsCompactPoint;       m_listDevAppsCompactPoint = nullptr;
+    delete m_running;                       m_running = nullptr;
+    delete m_runningDev;                    m_runningDev = nullptr;
 
     Handle::detach();
     m_compat1.detach();
@@ -385,10 +387,14 @@ void ApplicationManager::getForegroundAppInfo(LunaTaskPtr lunaTask)
 void ApplicationManager::lockApp(LunaTaskPtr lunaTask)
 {
     string appId;
-    bool lock;
+    bool lock = false;
 
-    JValueUtil::getValue(lunaTask->getRequestPayload(), "id", appId);
-    JValueUtil::getValue(lunaTask->getRequestPayload(), "lock", lock);
+    if (!JValueUtil::getValue(lunaTask->getRequestPayload(), "id", appId) ||
+        !JValueUtil::getValue(lunaTask->getRequestPayload(), "lock", lock)) {
+        lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Both 'id' and 'lock' are required");
+        LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
+        return;
+    }
 
     AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
     if (!appDesc) {
@@ -665,9 +671,9 @@ void ApplicationManager::managerInfo(LunaTaskPtr lunaTask)
     LaunchPointList::getInstance().toJson(launchPoints);
     lunaTask->getResponsePayload().put("launchPoints", launchPoints);
 
-    pbnjson::JValue running = pbnjson::Array();
-    RunningAppList::getInstance().toJson(running);
-    lunaTask->getResponsePayload().put("running", running);
+    pbnjson::JValue runningApps = pbnjson::Array();
+    RunningAppList::getInstance().toJson(runningApps);
+    lunaTask->getResponsePayload().put("running", runningApps);
 
     pbnjson::JValue lunaTasks = pbnjson::Array();
     LunaTaskList::getInstance().toJson(lunaTasks);
@@ -1021,7 +1027,7 @@ void ApplicationManager::makeGetForegroundAppInfo(JValue& payload)
 
 void ApplicationManager::makeRunning(JValue& payload, bool isDevmode)
 {
-    pbnjson::JValue running = pbnjson::Array();
-    RunningAppList::getInstance().toJson(running, isDevmode);
-    payload.put("running", running);
+    pbnjson::JValue runningApps = pbnjson::Array();
+    RunningAppList::getInstance().toJson(runningApps, isDevmode);
+    payload.put("running", runningApps);
 }
