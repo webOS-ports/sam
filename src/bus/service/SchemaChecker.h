@@ -31,7 +31,7 @@ using namespace pbnjson;
 class SchemaChecker : public ISingleton<SchemaChecker> {
 friend class ISingleton<SchemaChecker>;
 public:
-    virtual ~SchemaChecker();
+    virtual ~SchemaChecker() override;
 
     JValue getRequestPayloadWithSchema(Message& request);
     string getAPISchemaFilePath(const string& method);

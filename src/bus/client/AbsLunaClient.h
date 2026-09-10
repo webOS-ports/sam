@@ -49,7 +49,7 @@ public:
     static JValue& getSubscriptionPayload();
 
     AbsLunaClient(const string& name);
-    virtual ~AbsLunaClient();
+    virtual ~AbsLunaClient() override;
 
     virtual void initialize() final;
     virtual void finalize() final;

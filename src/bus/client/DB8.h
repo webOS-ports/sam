@@ -31,7 +31,7 @@ class DB8 : public ISingleton<DB8>,
             public AbsLunaClient {
 friend class ISingleton<DB8>;
 public:
-    virtual ~DB8();
+    virtual ~DB8() override;
 
     bool insertLaunchPoint(JValue& json);
     bool updateLaunchPoint(const JValue& json);

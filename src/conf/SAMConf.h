@@ -31,7 +31,7 @@ class SAMConf : public ISingleton<SAMConf>,
                 public IClassName {
 friend class ISingleton<SAMConf> ;
 public:
-    virtual ~SAMConf();
+    virtual ~SAMConf() override;
 
     void initialize();
 
@@ -290,13 +290,13 @@ public:
         return m_isJailerDisabled;
     }
 
-    bool isAppHandlingSupported()
+    static bool isAppHandlingSupported()
     {
         // TODO This should be moved in configuration file in the future.
         return true;
     }
 
-    bool isMultipleInstanceSupported()
+    static bool isMultipleInstanceSupported()
     {
         // TODO This should be moved in configuration file in the future.
         return true;

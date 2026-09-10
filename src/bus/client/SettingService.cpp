@@ -29,8 +29,8 @@ SettingService::SettingService()
 {
     setClassName("SettingService");
 
-    JValue localeInfo = JDomParser::fromFile(PATH_LOCALE_INFO);
-    updateLocaleInfo(localeInfo);
+    JValue settings = JDomParser::fromFile(PATH_LOCALE_INFO);
+    updateLocaleInfo(settings);
 }
 
 SettingService::~SettingService()
@@ -175,21 +175,21 @@ bool SettingService::onLocaleChanged(LSHandle* sh, LSMessage* message, void* con
 
 void SettingService::updateLocaleInfo(const JValue& settings)
 {
-    string localeInfo;
+    string uiLocale;
 
     if (settings.isNull() || !settings.isObject()) {
         return;
     }
 
-    if (!JValueUtil::getValue(settings, "localeInfo", "locales", "UI", localeInfo)) {
+    if (!JValueUtil::getValue(settings, "localeInfo", "locales", "UI", uiLocale)) {
         return;
     }
 
-    if (localeInfo.empty() || localeInfo == m_localeInfo) {
+    if (uiLocale.empty() || uiLocale == m_localeInfo) {
         return;
     }
 
-    m_localeInfo = std::move(localeInfo);
+    m_localeInfo = std::move(uiLocale);
     string language;
     string script;
     string region;

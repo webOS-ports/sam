@@ -21,7 +21,7 @@
 
 const string NativeProcess::CLASS_NAME = "NativeProcess";
 
-void NativeProcess::convertEnvToStr(map<string, string>& src, vector<string>& dest)
+void NativeProcess::convertEnvToStr(const map<string, string>& src, vector<string>& dest)
 {
     for (auto it = src.begin(); it != src.end(); ++it) {
         dest.push_back(it->first + "=" + it->second);
@@ -64,7 +64,7 @@ void NativeProcess::addArgument(const string& option, const string& value)
     m_arguments.push_back(value);
 }
 
-void NativeProcess::addEnv(map<string, string>& environments)
+void NativeProcess::addEnv(const map<string, string>& environments)
 {
     for (auto it = environments.begin(); it != environments.end(); ++it) {
         m_environments[it->first] = it->second;

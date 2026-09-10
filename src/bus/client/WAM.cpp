@@ -360,10 +360,8 @@ bool WAM::onKillApp(LSHandle* sh, LSMessage* message, void* context)
 
     if (!returnValue && lunaTask) {
         Logger::warning(getInstance().getClassName(), __FUNCTION__, "Failed to kill app. WAM might be restarted");
-        if (lunaTask) {
-            lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Failed to killApp in WAM");
-            lunaTask->error(lunaTask);
-        }
+        lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Failed to killApp in WAM");
+        lunaTask->error(lunaTask);
         return true;
     }
 

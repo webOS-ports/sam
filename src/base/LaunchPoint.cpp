@@ -47,9 +47,9 @@ LaunchPoint::LaunchPoint(AppDescriptionPtr appDesc, const string& launchPointId)
     : m_type(LaunchPointType::LaunchPoint_UNKNOWN),
       m_appDesc(std::move(appDesc)),
       m_launchPointId(launchPointId),
-      m_isDirty(false)
+      m_isDirty(false),
+      m_database(pbnjson::Object())
 {
-    m_database = pbnjson::Object();
 }
 
 LaunchPoint::~LaunchPoint()

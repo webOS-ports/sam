@@ -27,7 +27,7 @@ class MainDaemon : public ISingleton<MainDaemon>,
                    public IClassName {
 friend class ISingleton<MainDaemon>;
 public:
-    virtual ~MainDaemon();
+    virtual ~MainDaemon() override;
 
     void initialize();
     void finalize();

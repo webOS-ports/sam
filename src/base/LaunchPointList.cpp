@@ -194,7 +194,7 @@ void LaunchPointList::removeByLaunchPointId(const string& launchPointId)
     for (auto it = m_list.begin(); it != m_list.end(); ++it) {
         if ((*it)->getLaunchPointId() == launchPointId) {
             LaunchPointPtr launchPoint = *it;
-            it = m_list.erase(it);
+            m_list.erase(it);
             onRemove(std::move(launchPoint));
             return;
         }

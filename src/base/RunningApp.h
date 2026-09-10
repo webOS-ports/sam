@@ -65,7 +65,7 @@ public:
     static string generateInstanceId(int displayId);
     static int getDisplayId(const string& instanceId);
 
-    RunningApp(LaunchPointPtr launchPoint);
+    explicit RunningApp(LaunchPointPtr launchPoint);
     virtual ~RunningApp();
 
     // APIs
@@ -200,7 +200,7 @@ public:
         }
     }
 
-    string getPreload() const
+    const string& getPreload() const
     {
         // full, semi-full, partial, minimal
         return m_preload;
