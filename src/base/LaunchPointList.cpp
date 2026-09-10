@@ -72,7 +72,7 @@ LaunchPointPtr LaunchPointList::createBootmarkByDB(AppDescriptionPtr appDesc, co
 
 LaunchPointPtr LaunchPointList::createDefault(AppDescriptionPtr appDesc)
 {
-    string launchPointId = generateLaunchPointId(LaunchPointType::LaunchPoint_DEFAULT, appDesc->getAppId());
+    const string launchPointId = generateLaunchPointId(LaunchPointType::LaunchPoint_DEFAULT, appDesc->getAppId());
     LaunchPointPtr launchPoint = make_shared<LaunchPoint>(appDesc, launchPointId);
     launchPoint->setType(LaunchPointType::LaunchPoint_DEFAULT);
     return launchPoint;
@@ -108,7 +108,7 @@ LaunchPointPtr LaunchPointList::getByAppId(const string& appId)
     if (appId.empty())
         return nullptr;
 
-    string launchPointId = generateLaunchPointId(LaunchPointType::LaunchPoint_DEFAULT, appId);
+    const string launchPointId = generateLaunchPointId(LaunchPointType::LaunchPoint_DEFAULT, appId);
     return getByLaunchPointId(launchPointId);
 }
 
@@ -238,7 +238,7 @@ string LaunchPointList::generateLaunchPointId(LaunchPointType type, const string
     while (true) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        double verifier = tv.tv_usec;
+        const double verifier = tv.tv_usec;
 
         launchPointId = appId + "_" + boost::lexical_cast<string>(verifier);
         if (LaunchPointList::getInstance().getByLaunchPointId(launchPointId) == nullptr)

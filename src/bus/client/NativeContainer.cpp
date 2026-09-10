@@ -40,7 +40,7 @@ void NativeContainer::onKillChildProcess(GPid pid, gint status, gpointer data)
         }
         lastLogFile = runningApp->getLinuxProcess().getStdFile();
     }
-    LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(pid);
+    const LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(pid);
     if (runningApp == nullptr) {
         Logger::error(getInstance().getClassName(), __FUNCTION__, "Cannot find RunningApp");
         return;
@@ -103,7 +103,7 @@ void NativeContainer::initialize()
 
 void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    AppType type = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
+    const AppType type = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
 
     JValue params;
     if (AppType::AppType_Native_Qml == type) {
@@ -124,8 +124,8 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
         params.put("preload", runningApp->getPreload());
     }
 
-    bool isNojailApp = SAMConf::getInstance().isNoJailApp(runningApp->getAppId());
-    AppType appType = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
+    const bool isNojailApp = SAMConf::getInstance().isNoJailApp(runningApp->getAppId());
+    const AppType appType = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
     string path = runningApp->getLaunchPoint()->getAppDesc()->getAbsMain();
     if (path.find("file://", 0) != string::npos)
         path = path.substr(7);

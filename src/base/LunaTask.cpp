@@ -32,7 +32,7 @@ int LunaTask::getDisplayId()
 
 void LunaTask::setDisplayId(const int displayId)
 {
-    int oldDisplayId = getDisplayId();
+    const int oldDisplayId = getDisplayId();
     if (oldDisplayId != -1 && oldDisplayId != displayId) {
         Logger::warning(LOG_NAME, __FUNCTION__, Logger::format("DisplayId is not empty: Old(%d) New(%d)", oldDisplayId, displayId));
     }

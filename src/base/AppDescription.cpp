@@ -359,21 +359,21 @@ bool AppDescription::loadAppinfo()
 
     // apply localization (overwrite from low to high)
     for (const auto& localizationDir : localizationDirs) {
-        string AbsoluteLocaleAppinfoPath = localizationDir + "appinfo.json";
-        string RelativeLocaleAppinfoPath = localizationDir.substr(m_folderPath.length());
+        const string AbsoluteLocaleAppinfoPath = localizationDir + "appinfo.json";
+        const string RelativeLocaleAppinfoPath = localizationDir.substr(m_folderPath.length());
 
         if (!File::isFile(AbsoluteLocaleAppinfoPath)) {
             continue;
         }
 
-        JValue localeAppinfo = JDomParser::fromFile(AbsoluteLocaleAppinfoPath.c_str());
+        const JValue localeAppinfo = JDomParser::fromFile(AbsoluteLocaleAppinfoPath.c_str());
         if (localeAppinfo.isNull()) {
             Logger::info(CLASS_NAME, __FUNCTION__, "IGNORRED", Logger::format("failed_to_load_localication: %s", localizationDir.c_str()));
             continue;
         }
 
         for (auto item : localeAppinfo.children()) {
-            string key = item.first.asString();
+            const string key = item.first.asString();
 
             if (!m_appinfo.hasKey(key) || m_appinfo[key].getType() != localeAppinfo[key].getType()) {
                 Logger::warning(CLASS_NAME, __FUNCTION__, m_appId, AbsoluteLocaleAppinfoPath, "localization is unmatchted with root");
@@ -442,9 +442,9 @@ bool AppDescription::readAppinfo()
             boost::conversion::try_lexical_convert(versionInfo[index], part);
         return part;
     };
-    uint16_t major_ver = versionPart(0);
-    uint16_t minor_ver = versionPart(1);
-    uint16_t micro_ver = versionPart(2);
+    const uint16_t major_ver = versionPart(0);
+    const uint16_t minor_ver = versionPart(1);
+    const uint16_t micro_ver = versionPart(2);
     m_intVersion = { major_ver, minor_ver, micro_ver };
 
     // app_type
@@ -485,12 +485,12 @@ bool AppDescription::readAsset()
             continue;
         }
 
-        string filename = value.substr(1);
+        const string filename = value.substr(1);
         bool foundAsset = false;
 
-        JValue fallbacks = SAMConf::getInstance().getSysAssetFallbackPrecedence();
+        const JValue fallbacks = SAMConf::getInstance().getSysAssetFallbackPrecedence();
         for (int i = 0; i < fallbacks.arraySize(); i++) {
-            string assetPath = File::join(File::join(sysAssetsBasePath, fallbacks[i].asString()), filename);
+            const string assetPath = File::join(File::join(sysAssetsBasePath, fallbacks[i].asString()), filename);
             string pathToCheck = "";
 
             // set asset without variant
@@ -508,7 +508,7 @@ bool AppDescription::readAsset()
             continue;
         }
 
-        string defaultAsset = File::join(sysAssetsBasePath, filename);
+        const string defaultAsset = File::join(sysAssetsBasePath, filename);
         m_appinfo.put(key, defaultAsset);
     }
     return true;

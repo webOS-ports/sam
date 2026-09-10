@@ -38,7 +38,7 @@ bool WAM::onListRunningApps(LSHandle* sh, LSMessage* message, void* context)
 
     RunningAppList::getInstance().setConext(AppType::AppType_Web, CONTEXT_STOP);
     JValueUtil::getValue(subscriptionPayload, "running", running);
-    int size = running.arraySize();
+    const int size = running.arraySize();
     for (int i = 0; i < size; i++) {
         JValueUtil::getValue(running[i], "id", appId);
         JValueUtil::getValue(running[i], "webprocessid", webprocessid);
@@ -99,7 +99,7 @@ void WAM::onFinalized()
 
 void WAM::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/listRunningApps");
+    static const string method = string("luna://") + getName() + string("/listRunningApps");
 
     if (isConnected) {
         JValue requestPayload = pbnjson::Object();
@@ -133,8 +133,8 @@ bool WAM::onLaunchApp(LSHandle* sh, LSMessage* message, void* context)
         return false;
     }
 
-    LSMessageToken token = LSMessageGetResponseToken(message);
-    LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
+    const LSMessageToken token = LSMessageGetResponseToken(message);
+    const LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
     if (lunaTask == nullptr) {
         Logger::error(getInstance().getClassName(), __FUNCTION__, "Cannot find lunaTask about launch request");
         return false;
@@ -155,7 +155,7 @@ bool WAM::onLaunchApp(LSHandle* sh, LSMessage* message, void* context)
         return true;
     }
 
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_LAUNCH, "Cannot find RunningApp");
         lunaTask->error(lunaTask);
@@ -176,7 +176,7 @@ bool WAM::onLaunchApp(LSHandle* sh, LSMessage* message, void* context)
 
 void WAM::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    static string method = string("luna://") + getName() + string("/launchApp");
+    static const string method = string("luna://") + getName() + string("/launchApp");
     JValue requestPayload = pbnjson::Object();
 
     if (!isConnected()) {
@@ -238,7 +238,7 @@ void WAM::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 
 void WAM::close(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    string sender = lunaTask->getCaller();
+    const string sender = lunaTask->getCaller();
     if (sender == "com.webos.service.memorymanager") {
         killApp(runningApp, std::move(lunaTask));
         return;
@@ -266,9 +266,9 @@ bool WAM::onPauseApp(LSHandle* sh, LSMessage* message, void* context)
         return false;
     }
 
-    LSMessageToken token = LSMessageGetResponseToken(message);
-    LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByToken(token);
+    const LSMessageToken token = LSMessageGetResponseToken(message);
+    const LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByToken(token);
     if (lunaTask == nullptr) {
         Logger::error(getInstance().getClassName(), __FUNCTION__, "Failed to get lunaTask");
         return false;
@@ -303,7 +303,7 @@ bool WAM::onPauseApp(LSHandle* sh, LSMessage* message, void* context)
 
 void WAM::pause(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    static string method = string("luna://") + getName() + string("/pauseApp");
+    static const string method = string("luna://") + getName() + string("/pauseApp");
 
     if (!isConnected()) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "WAM is not running. The app is not exist");
@@ -348,8 +348,8 @@ bool WAM::onKillApp(LSHandle* sh, LSMessage* message, void* context)
         return false;
     }
 
-    LSMessageToken token = LSMessageGetResponseToken(message);
-    LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
+    const LSMessageToken token = LSMessageGetResponseToken(message);
+    const LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
     RunningAppPtr runningApp = RunningAppList::getInstance().getByToken(token);
 
     string procId = "";
@@ -380,7 +380,7 @@ bool WAM::onKillApp(LSHandle* sh, LSMessage* message, void* context)
 
 void WAM::killApp(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    static string method = string("luna://") + getName() + string("/killApp");
+    static const string method = string("luna://") + getName() + string("/killApp");
     JValue requestPayload = pbnjson::Object();
 
     if (!isConnected()) {

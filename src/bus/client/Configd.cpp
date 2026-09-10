@@ -43,7 +43,7 @@ void Configd::onFinalized()
 
 void Configd::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getConfigs");
+    static const string method = string("luna://") + getName() + string("/getConfigs");
 
     if (isConnected) {
         JValue requestPayload = pbnjson::Object();

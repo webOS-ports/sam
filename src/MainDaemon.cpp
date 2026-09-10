@@ -123,7 +123,7 @@ void MainDaemon::onGetConfigs(const JValue& responsePayload)
 {
     JValue sysAssetFallbackPrecedence;
     JValue keepAliveApps;
-    JValue lifeCycle;
+    const JValue lifeCycle;
 
     if (JValueUtil::getValue(responsePayload, "configs", "system.sysAssetFallbackPrecedence", sysAssetFallbackPrecedence) && sysAssetFallbackPrecedence.isArray()) {
         SAMConf::getInstance().setSysAssetFallbackPrecedence(sysAssetFallbackPrecedence);

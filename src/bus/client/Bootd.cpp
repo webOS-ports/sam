@@ -38,7 +38,7 @@ void Bootd::onFinalized()
 
 void Bootd::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getBootStatus");
+    static const string method = string("luna://") + getName() + string("/getBootStatus");
 
     if (isConnected) {
         m_getBootStatusCall = ApplicationManager::getInstance().callMultiReply(

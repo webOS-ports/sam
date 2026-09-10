@@ -73,7 +73,7 @@ bool File::concatToFilename(const string& originPath, string& returnPath, const 
         filename = originPath.substr(pos_dir);
     }
 
-    size_t pos_ext = filename.find_last_of('.');
+    const size_t pos_ext = filename.find_last_of('.');
 
     if (string::npos == pos_ext)
         return false;

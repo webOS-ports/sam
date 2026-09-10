@@ -263,11 +263,11 @@ void RunningApp::setLifeStatus(LifeStatus lifeStatus)
 
 gboolean RunningApp::onKillingTimer(gpointer context)
 {
-    RunningApp* self = static_cast<RunningApp*>(context);
+    RunningApp const* self = static_cast<RunningApp*>(context);
     if (self == nullptr) {
         return G_SOURCE_REMOVE;
     }
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(self->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(self->getInstanceId());
     if (runningApp == nullptr) {
         return G_SOURCE_REMOVE;
     }

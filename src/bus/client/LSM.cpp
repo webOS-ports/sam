@@ -68,7 +68,7 @@ void LSM::onFinalized()
 
 void LSM::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getForegroundAppInfo");
+    static const string method = string("luna://") + getName() + string("/getForegroundAppInfo");
 
     if (isConnected) {
         m_getForegroundAppInfoCall = ApplicationManager::getInstance().callMultiReply(
@@ -111,7 +111,7 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
         JValueUtil::getValue(orgForegroundAppInfo[i], "displayId", displayId);
         JValueUtil::getValue(orgForegroundAppInfo[i], "processId", processId);
 
-        RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId, displayId);
+        const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId, displayId);
         if (runningApp == nullptr) {
             Logger::info(getInstance().getClassName(), __FUNCTION__, "Cannot find RunningApp. Respawned or Skipped for other sessions");
             continue;
@@ -158,7 +158,7 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
         }
 
         if (found == false) {
-            RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(oldAppId);
+            const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(oldAppId);
             if (runningApp && runningApp->getLifeStatus() == LifeStatus::LifeStatus_FOREGROUND) {
                 runningApp->setLifeStatus(LifeStatus::LifeStatus_BACKGROUND);
             }

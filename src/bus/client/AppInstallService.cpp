@@ -42,7 +42,7 @@ bool AppInstallService::onStatus(LSHandle* sh, LSMessage* message, void* context
     if ((packageId.empty() && id.empty())) {
         return true;
     }
-    string appId = packageId.empty() ? id : packageId;
+    const string appId = packageId.empty() ? id : packageId;
 
     switch (statusValue) {
     case 22: // Install operation is cancelled
@@ -82,7 +82,7 @@ void AppInstallService::onFinalized()
 
 void AppInstallService::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/status");
+    static const string method = string("luna://") + getName() + string("/status");
     if (isConnected) {
         m_statusCall = ApplicationManager::getInstance().callMultiReply(
             method.c_str(),
@@ -109,7 +109,7 @@ bool AppInstallService::onRemove(LSHandle* sh, LSMessage *message, void* context
 
 Call AppInstallService::remove(const string& appId)
 {
-    static string method = string("luna://") + getName() + string("/remove");
+    static const string method = string("luna://") + getName() + string("/remove");
 
     JValue requestPayload = pbnjson::Object();
     requestPayload.put("id", appId);

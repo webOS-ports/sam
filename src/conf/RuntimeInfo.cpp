@@ -34,10 +34,10 @@ RuntimeInfo::~RuntimeInfo()
 void RuntimeInfo::initialize()
 {
     char* displayId = getenv("DISPLAY_ID");
-    char* deviceType = getenv("DEVICE_TYPE");
-    char* user = getenv("USER");
-    char* home = getenv("HOME");
-    char* container = getenv("container");
+    char const* deviceType = getenv("DEVICE_TYPE");
+    char const* user = getenv("USER");
+    char const* home = getenv("HOME");
+    char const* container = getenv("container");
 
     if (displayId != nullptr && !boost::conversion::try_lexical_convert(string(displayId), m_displayId)) {
         Logger::warning(getClassName(), __FUNCTION__,

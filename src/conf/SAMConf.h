@@ -113,7 +113,7 @@ public:
         if (!JValueUtil::getValue(m_readOnlyDatabase, "FullscreenWindowType", FullscreenWindowType) || !FullscreenWindowType.isArray()) {
             return false;
         }
-        int size = FullscreenWindowType.arraySize();
+        const int size = FullscreenWindowType.arraySize();
         for (int i = 0; i < size; ++i) {
             if (FullscreenWindowType[i].asString() == type) {
                 return true;
@@ -129,7 +129,7 @@ public:
             return false;
         }
 
-        int size = NoJailApps.arraySize();
+        const int size = NoJailApps.arraySize();
         for (int i = 0; i < size; ++i) {
             if (NoJailApps[i].asString() == appId) {
                 return true;
@@ -145,7 +145,7 @@ public:
         JValue keepAliveApps;
 
         if (JValueUtil::getValue(m_readOnlyDatabase, "keepAliveApps", keepAliveApps) && keepAliveApps.isArray()) {
-            int size = keepAliveApps.arraySize();
+            const int size = keepAliveApps.arraySize();
             for (int i = 0; i < size; ++i) {
                 if (keepAliveApps[i].asString() == appId) {
                     return true;
@@ -154,7 +154,7 @@ public:
         }
 
         if (!JValueUtil::getValue(m_readWriteDatabase, "keepAliveApps", keepAliveApps) && keepAliveApps.isArray()) {
-            int size = keepAliveApps.arraySize();
+            const int size = keepAliveApps.arraySize();
             for (int i = 0; i < size; ++i) {
                 if (keepAliveApps[i].asString() == appId) {
                     return true;
@@ -205,7 +205,7 @@ public:
             return false;
         }
 
-        int size = deletedSystemApps.arraySize();
+        const int size = deletedSystemApps.arraySize();
         for (int i = 0; i < size; ++i) {
             if (deletedSystemApps[i].asString() == appId) {
                 return true;
@@ -266,7 +266,7 @@ public:
             return false;
         }
 
-        int size = blockedAppList.arraySize();
+        const int size = blockedAppList.arraySize();
         for (int i = 0; i < size; ++i) {
             if (blockedAppList[i].asString() == appId) {
                 return true;

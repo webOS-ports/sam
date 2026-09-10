@@ -169,7 +169,7 @@ Logger::Logger()
       m_type(LogType_CONSOLE)
 {
     setvbuf(stdout, NULL, _IONBF, 0);
-    char* LOG_VERBOSE = getenv("LOG_VERBOSE");
+    char const* LOG_VERBOSE = getenv("LOG_VERBOSE");
     if (LOG_VERBOSE != nullptr) {
         s_isVerbose = true;
     }

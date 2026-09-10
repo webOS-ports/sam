@@ -29,7 +29,7 @@ SettingService::SettingService()
 {
     setClassName("SettingService");
 
-    JValue settings = JDomParser::fromFile(PATH_LOCALE_INFO);
+    const JValue settings = JDomParser::fromFile(PATH_LOCALE_INFO);
     updateLocaleInfo(settings);
 }
 
@@ -49,7 +49,7 @@ void SettingService::onFinalized()
 
 void SettingService::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getSystemSettings");
+    static const string method = string("luna://") + getName() + string("/getSystemSettings");
 
     if (isConnected) {
         JValue requestPayload = pbnjson::Object();
@@ -125,7 +125,7 @@ Done:
 
 Call SettingService::checkParentalLock(LSFilterFunc func, const string& appId)
 {
-    static string method = string("luna://") + getName() + string("/batch");
+    static const string method = string("luna://") + getName() + string("/batch");
     JValue requestPayload = pbnjson::Object();
     JValue operations = pbnjson::Array();
 
@@ -199,7 +199,7 @@ void SettingService::updateLocaleInfo(const JValue& settings)
         script = "";
         region = "";
     } else {
-        icu::Locale icu_UI_locale = icu::Locale::createFromName(m_localeInfo.c_str());
+        const icu::Locale icu_UI_locale = icu::Locale::createFromName(m_localeInfo.c_str());
         language = icu_UI_locale.getLanguage();
         script = icu_UI_locale.getScript();
         region = icu_UI_locale.getCountry();

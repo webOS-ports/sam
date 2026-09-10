@@ -233,7 +233,7 @@ public:
 
     long long getTimeStamp() const
     {
-        long long now = Time::getCurrentTime();
+        const long long now = Time::getCurrentTime();
         return (now - m_startTime);
     }
 

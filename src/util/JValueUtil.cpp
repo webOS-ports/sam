@@ -38,7 +38,7 @@ JSchema JValueUtil::getSchema(string name)
     if (it != s_schemas.end())
         return it->second;
 
-    string path = PATH_SAM_SCHEMAS + name + ".schema";
+    const string path = PATH_SAM_SCHEMAS + name + ".schema";
     pbnjson::JSchema schema = JSchema::fromFile(path.c_str());
     if (!schema.isInitialized())
         return JSchema::AllSchema();

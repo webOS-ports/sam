@@ -243,7 +243,7 @@ void ApplicationManager::detach()
 
 void ApplicationManager::launch(LunaTaskPtr lunaTask)
 {
-    LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLunaTask(lunaTask);
+    const LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLunaTask(lunaTask);
 
     // launchPoint can be nullptr because there can be only 'instanceId' in requestPayload
     if (launchPoint) {
@@ -260,7 +260,7 @@ void ApplicationManager::launch(LunaTaskPtr lunaTask)
         }
     }
 
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask, false);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask, false);
     if (runningApp != nullptr) {
         PolicyManager::getInstance().relaunch(std::move(lunaTask));
         return;
@@ -280,7 +280,7 @@ void ApplicationManager::launch(LunaTaskPtr lunaTask)
 
 void ApplicationManager::pause(LunaTaskPtr lunaTask)
 {
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, lunaTask->getId() + " is not running");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -292,7 +292,7 @@ void ApplicationManager::pause(LunaTaskPtr lunaTask)
 
 void ApplicationManager::close(LunaTaskPtr lunaTask)
 {
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, lunaTask->getId() + " is not running");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -396,7 +396,7 @@ void ApplicationManager::lockApp(LunaTaskPtr lunaTask)
         return;
     }
 
-    AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
+    const AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
     if (!appDesc) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, appId + " was not found OR Unsupported Application Type");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -417,7 +417,7 @@ void ApplicationManager::lockApp(LunaTaskPtr lunaTask)
 
 void ApplicationManager::registerApp(LunaTaskPtr lunaTask)
 {
-    string ls2name = lunaTask->getCaller();
+    const string ls2name = lunaTask->getCaller();
     const pbnjson::JValue& jmsg = lunaTask->getRequestPayload();;
 
     bool subscribed = true;
@@ -472,7 +472,7 @@ void ApplicationManager::listApps(LunaTaskPtr lunaTask)
 
 void ApplicationManager::getAppStatus(LunaTaskPtr lunaTask)
 {
-    string appId = lunaTask->getAppId();
+    const string appId = lunaTask->getAppId();
     bool appInfo = false;
 
     JValueUtil::getValue(lunaTask->getRequestPayload(), "appInfo", appInfo);
@@ -483,7 +483,7 @@ void ApplicationManager::getAppStatus(LunaTaskPtr lunaTask)
         return;
     }
     if (lunaTask->getRequest().isSubscription()) {
-        string subscriptionKey = "getappstatus#" + appId + "#" + (appInfo ? "Y" : "N");
+        const string subscriptionKey = "getappstatus#" + appId + "#" + (appInfo ? "Y" : "N");
         if (LSSubscriptionAdd(this->get(), subscriptionKey.c_str(), lunaTask->getMessage(), NULL)) {
             lunaTask->getResponsePayload().put("subscribed", true);
         } else {
@@ -495,7 +495,7 @@ void ApplicationManager::getAppStatus(LunaTaskPtr lunaTask)
     lunaTask->getResponsePayload().put("appId", appId);
     lunaTask->getResponsePayload().put("event", "nothing");
 
-    AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
+    const AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
     if (!appDesc) {
         lunaTask->getResponsePayload().put("status", "notExist");
         lunaTask->getResponsePayload().put("exist", false);
@@ -517,14 +517,14 @@ void ApplicationManager::getAppInfo(LunaTaskPtr lunaTask)
 {
     const pbnjson::JValue& requestPayload = lunaTask->getRequestPayload();
 
-    string appId = requestPayload["id"].asString();
+    const string appId = requestPayload["id"].asString();
     if (appId.empty()) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Invalid appId specified");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
         return;
     }
 
-    AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
+    const AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
     if (!appDesc) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Invalid appId specified OR Unsupported Application Type: " + appId);
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -548,20 +548,20 @@ void ApplicationManager::getAppBasePath(LunaTaskPtr lunaTask)
 {
     const pbnjson::JValue& requestPayload = lunaTask->getRequestPayload();
 
-    string appId = requestPayload["appId"].asString();
+    const string appId = requestPayload["appId"].asString();
 
     if (appId.empty()) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Invalid appId specified");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
         return;
     }
-    AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
+    const AppDescriptionPtr appDesc = AppDescriptionList::getInstance().getByAppId(appId);
     if (!appDesc) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Invalid appId specified: " + appId);
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
         return;
     }
-    AppDescriptionPtr appDescFrom = AppDescriptionList::getInstance().getByAppId(lunaTask->getCaller());
+    const AppDescriptionPtr appDescFrom = AppDescriptionList::getInstance().getByAppId(lunaTask->getCaller());
     if (lunaTask->getCaller() != appId && (!appDescFrom || !appDescFrom->isTrusted())) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Not allowed. Allow only for the info of calling app itself, or from trusted apps.");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -591,7 +591,7 @@ void ApplicationManager::addLaunchPoint(LunaTaskPtr lunaTask)
         return;
     }
 
-    LaunchPointPtr launchPoint = LaunchPointList::getInstance().createBootmarkByAPI(std::move(appDesc), requestPayload);
+    const LaunchPointPtr launchPoint = LaunchPointList::getInstance().createBootmarkByAPI(std::move(appDesc), requestPayload);
     if (!launchPoint) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Cannot create bookmark");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -613,7 +613,7 @@ void ApplicationManager::updateLaunchPoint(LunaTaskPtr lunaTask)
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
         return;
     }
-    LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
+    const LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
     if (launchPoint == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "cannot find launch point");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -628,7 +628,7 @@ void ApplicationManager::updateLaunchPoint(LunaTaskPtr lunaTask)
 
 void ApplicationManager::removeLaunchPoint(LunaTaskPtr lunaTask)
 {
-    LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(lunaTask->getLaunchPointId());
+    const LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(lunaTask->getLaunchPointId());
     if (launchPoint == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Cannot find launch point");
         LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
@@ -845,7 +845,7 @@ void ApplicationManager::postGetAppStatus(AppDescriptionPtr appDesc, AppStatusEv
     subscriptionPayload.put("event", AppDescription::toString(event));
     subscriptionPayload.put("returnValue", true);
 
-    string nKey = "getappstatus#" + appDesc->getAppId() + "#N";
+    const string nKey = "getappstatus#" + appDesc->getAppId() + "#N";
     Logger::logSubscriptionPost(getClassName(), __FUNCTION__, nKey, subscriptionPayload);
     if (!LSSubscriptionReply(ApplicationManager::getInstance().get(), nKey.c_str(), subscriptionPayload.stringify().c_str(), NULL)) {
         Logger::warning(getClassName(), __FUNCTION__, "Failed to post subscription");
@@ -861,7 +861,7 @@ void ApplicationManager::postGetAppStatus(AppDescriptionPtr appDesc, AppStatusEv
         break;
     }
 
-    string yKey = "getappstatus#" + appDesc->getAppId() + "#Y";
+    const string yKey = "getappstatus#" + appDesc->getAppId() + "#Y";
     Logger::logSubscriptionPost(getClassName(), __FUNCTION__, yKey, subscriptionPayload);
     if (!LSSubscriptionReply(ApplicationManager::getInstance().get(), yKey.c_str(), subscriptionPayload.stringify().c_str(), NULL)) {
         Logger::warning(getClassName(), __FUNCTION__, "Failed to post subscription");
@@ -907,14 +907,14 @@ void ApplicationManager::postListApps(AppDescriptionPtr appDesc, const string& c
     while (LSSubscriptionHasNext(iter)) {
         LSMessage* message = LSSubscriptionNext(iter);
         Message request(message);
-        bool isDevmode = (strcmp(request.getKind(), "/dev/listApps") == 0);
+        const bool isDevmode = (strcmp(request.getKind(), "/dev/listApps") == 0);
 
         if (isDevmode && !SAMConf::getInstance().isDevmodeEnabled()) {
             Logger::debug(getClassName(), __FUNCTION__, "Devmode is disabled");
             continue;
         }
 
-        pbnjson::JValue requestPayload = JDomParser::fromString(request.getPayload(), JValueUtil::getSchema("applicationManager.listApps"));
+        const pbnjson::JValue requestPayload = JDomParser::fromString(request.getPayload(), JValueUtil::getSchema("applicationManager.listApps"));
         if (requestPayload.isNull()) {
             Logger::warning(getClassName(), __FUNCTION__, "Failed to parse requestPayload");
             continue;
@@ -934,7 +934,7 @@ void ApplicationManager::postListApps(AppDescriptionPtr appDesc, const string& c
                 Logger::debug(getClassName(), __FUNCTION__, "Devmode != DevmodeApp");
                 continue;
             }
-            pbnjson::JValue app = appDesc->getJson(properties);
+            const pbnjson::JValue app = appDesc->getJson(properties);
             subscriptionPayload.put("app", app);
         }
         Logger::debug(getClassName(), __FUNCTION__, request.getSenderServiceName());
@@ -1010,8 +1010,8 @@ void ApplicationManager::postRunning(RunningAppPtr runningApp)
 
 void ApplicationManager::makeGetForegroundAppInfo(JValue& payload)
 {
-    string appId = LSM::getInstance().getFullWindowAppId();
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId);
+    const string appId = LSM::getInstance().getFullWindowAppId();
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId);
     if (runningApp == nullptr) {
         payload.put("appId", "");
         payload.put("instanceId", "");
