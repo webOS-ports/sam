@@ -75,7 +75,7 @@ public:
     static const char* toString(AppLocation location);
     static AppLocation toAppLocation(const string& type);
 
-    AppDescription(const string& appId);
+    explicit AppDescription(const string& appId);
     virtual ~AppDescription();
 
     bool scan();
@@ -240,7 +240,7 @@ public:
         return false;
     }
 
-    bool isTrusted()
+    bool isTrusted() const
     {
         string trustLevel = "";
         JValueUtil::getValue(m_appinfo, "trustLevel", trustLevel);
