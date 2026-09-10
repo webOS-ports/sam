@@ -294,7 +294,7 @@ JValue AppDescription::getJson(JValue& properties)
 // canonicalised, "/resources/en/../../icon.png" - is published as-is and
 // resolves nowhere. That is why com.palm.app.accounts had a working main and no
 // icon in the launcher.
-string AppDescription::anchorLocalePath(const string& relativeLocaleDir, const string& value)
+string AppDescription::anchorLocalePath(const string& folderPath, const string& relativeLocaleDir, const string& value)
 {
     auto relativise = [](const string& path) -> string {
         gchar* resolved = g_canonicalize_filename(path.c_str(), "/");
@@ -306,12 +306,12 @@ string AppDescription::anchorLocalePath(const string& relativeLocaleDir, const s
         return result;
     };
 
-    string localeRelative = relativise(relativeLocaleDir + value);
-    if (File::isFile(File::join(m_folderPath, localeRelative)))
+    const string localeRelative = relativise(relativeLocaleDir + value);
+    if (File::isFile(File::join(folderPath, localeRelative)))
         return localeRelative;
 
-    string rootRelative = relativise(value);
-    if (File::isFile(File::join(m_folderPath, rootRelative)))
+    const string rootRelative = relativise(value);
+    if (File::isFile(File::join(folderPath, rootRelative)))
         return rootRelative;
 
     // Neither is present. Keep the localization-relative form so a value naming
@@ -403,7 +403,7 @@ bool AppDescription::loadAppinfo()
 
             if (find(PROPS_IMAGES.begin(), PROPS_IMAGES.end(), key) != PROPS_IMAGES.end() ||
                 find(PROPS_PATHS.begin(), PROPS_PATHS.end(), key) != PROPS_PATHS.end()) {
-                m_appinfo.put(key, anchorLocalePath(RelativeLocaleAppinfoPath,
+                m_appinfo.put(key, anchorLocalePath(m_folderPath, RelativeLocaleAppinfoPath,
                                                     localeAppinfo[key].asString()));
             } else {
                 m_appinfo.put(key, localeAppinfo[key]);

@@ -228,23 +228,23 @@ public:
         saveReadWriteConf();
     }
 
-    const string& getLanguage() const
+    string getLanguage() const
     {
-        static string language = "";
+        string language = "";
         JValueUtil::getValue(m_readWriteDatabase, "language", language);
         return language;
     }
 
-    const string& getScript() const
+    string getScript() const
     {
-        static string script = "";
+        string script = "";
         JValueUtil::getValue(m_readWriteDatabase, "script", script);
         return script;
     }
 
-    const string& getRegion() const
+    string getRegion() const
     {
-        static string region = "";
+        string region = "";
         JValueUtil::getValue(m_readWriteDatabase, "region", region);
         return region;
     }

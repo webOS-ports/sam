@@ -75,6 +75,10 @@ public:
     static const char* toString(AppLocation location);
     static AppLocation toAppLocation(const string& type);
 
+    // Resolve a path taken from a localized appinfo.json against the directory
+    // it is really relative to. Pure helper; see the definition for the rules.
+    static string anchorLocalePath(const string& folderPath, const string& relativeLocaleDir, const string& value);
+
     explicit AppDescription(const string& appId);
     virtual ~AppDescription();
 
@@ -317,7 +321,6 @@ private:
     AppDescription& operator=(const AppDescription& appDesc) = delete;
     AppDescription(const AppDescription& appDesc) = delete;
 
-    string anchorLocalePath(const string& relativeLocaleDir, const string& value);
     bool loadAppinfo();
     bool readAppinfo();
     bool readAsset();
