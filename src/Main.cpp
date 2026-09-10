@@ -41,7 +41,7 @@ void signal_handler(int signal, siginfo_t *siginfo, void *context)
     si_code = siginfo->si_code;
 
     Logger::warning(CLASS_NAME, __FUNCTION__, Logger::format("signal(%d) si_code(%d) sender_pid(%s) sender_cmdline(%s)", signal, si_code, sender_pid.c_str(), sender_cmdline.c_str()));
-    buf = File::readFile(sender_cmdline.c_str());
+    buf = File::readFile(sender_cmdline);
     if (buf.empty()) {
         Logger::warning(CLASS_NAME, __FUNCTION__, Logger::format("signal(%d) si_code(%d) si_pid(%d), si_uid(%d)", signal, si_code, siginfo->si_pid, siginfo->si_uid));
         goto Done;

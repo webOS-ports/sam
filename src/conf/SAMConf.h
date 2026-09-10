@@ -107,7 +107,7 @@ public:
         return RespawnedPath;
     }
 
-    bool isFullscreenWindowTypes(string type)
+    bool isFullscreenWindowTypes(const string& type)
     {
         JValue FullscreenWindowType;
         if (!JValueUtil::getValue(m_readOnlyDatabase, "FullscreenWindowType", FullscreenWindowType) || !FullscreenWindowType.isArray()) {

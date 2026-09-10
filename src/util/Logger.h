@@ -135,8 +135,8 @@ private:
     Logger();
 
     void write(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
-    void writeConsole(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
-    void writePmlog(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
+    static void writeConsole(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
+    static void writePmlog(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
 
     enum LogLevel m_level;
     enum LogType m_type;

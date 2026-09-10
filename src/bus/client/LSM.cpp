@@ -16,6 +16,8 @@
 
 #include "LSM.h"
 
+#include <algorithm>
+
 #include <boost/lexical_cast.hpp>
 
 #include "base/AppDescription.h"
@@ -148,14 +150,9 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
     }
 
     // set background
-    for (auto& oldAppId : getInstance().m_foregroundAppIds) {
-        bool found = false;
-        for (auto& newAppId : newForegroundAppIds) {
-            if (oldAppId == newAppId) {
-                found = true;
-                break;
-            }
-        }
+    for (const auto& oldAppId : getInstance().m_foregroundAppIds) {
+        const bool found = std::find(newForegroundAppIds.begin(), newForegroundAppIds.end(), oldAppId)
+                           != newForegroundAppIds.end();
 
         if (found == false) {
             const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(oldAppId);
