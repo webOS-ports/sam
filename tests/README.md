@@ -39,6 +39,16 @@ Yocto sysroot ships its own loader:
     LD_LIBRARY_PATH=<sysroot>/usr/lib \
       <sysroot>/usr/lib/ld-linux-x86-64.so.2 <build>/tests/sam_test
 
+The ARM builds run under qemu user-mode, which is worth doing rather than
+trusting the x86-64 run alone: armv7 is 32-bit, so `ssize_t` and `gsize` are
+half the width they are on the other targets.
+
+    qemu-arm     -L <sysroot> -E LD_LIBRARY_PATH=<sysroot>/usr/lib <build>/tests/sam_test
+    qemu-aarch64 -L <sysroot> -E LD_LIBRARY_PATH=<sysroot>/usr/lib <build>/tests/sam_test
+
+The suite passes 52/52 on x86-64, armv7 and aarch64 (the latter against the
+halium-arm64 sysroot).
+
 ## What is covered, and why
 
 Each suite guards a defect that static analysis found in this tree, so a
@@ -68,6 +78,12 @@ The bus clients (`WAM`, `LSM`, `ApplicationManager`, ...) are singletons that
 register on luna-service in their constructors, so they need a live bus or a
 seam that does not exist yet. They are worth revisiting if these classes ever
 grow a constructor that takes its dependencies.
+
+Nothing here starts the daemon. `sam` registering on the bus, answering
+`launch`, and driving an application through its lifecycle are all untested by
+this suite and still need a device or a booted image. Treat a green run as
+"the logic these tests reach is sound on this architecture", not as
+"safe to ship".
 
 ## Two things to know before extending this
 
