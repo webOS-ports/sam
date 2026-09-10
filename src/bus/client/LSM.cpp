@@ -16,6 +16,8 @@
 
 #include "LSM.h"
 
+#include <boost/lexical_cast.hpp>
+
 #include "base/AppDescription.h"
 #include "base/LaunchPointList.h"
 #include "base/LaunchPoint.h"
@@ -129,7 +131,14 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
         // SAM knows its child pid better than LSM.
         // This code is needed specially in container environment.
         if (runningApp->getLaunchPoint()->getAppDesc()->getAppType() == AppType::AppType_Web) {
-            runningApp->setProcessId(atoi(processId.c_str()));
+            // processId arrives as a string over the bus. atoi turned anything
+            // non-numeric into pid 0 without a word; keep the old pid instead.
+            int pid = 0;
+            if (boost::conversion::try_lexical_convert(processId, pid) && pid > 0)
+                runningApp->setProcessId((pid_t) pid);
+            else
+                Logger::warning(getInstance().getClassName(), __FUNCTION__, runningApp->getAppId(),
+                                Logger::format("Ignoring malformed processId '%s'", processId.c_str()));
         }
         runningApp->setLifeStatus(LifeStatus::LifeStatus_FOREGROUND);
         if (runningApp->isFirstLaunch())

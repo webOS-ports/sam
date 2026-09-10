@@ -433,9 +433,18 @@ bool AppDescription::readAppinfo()
     JValueUtil::getValue(m_appinfo, "version", version);
     vector<string> versionInfo;
     boost::split(versionInfo, version, boost::is_any_of("."));
-    uint16_t major_ver = versionInfo.size() > 0 ? (uint16_t) stoi(versionInfo[0]) : 0;
-    uint16_t minor_ver = versionInfo.size() > 1 ? (uint16_t) stoi(versionInfo[1]) : 0;
-    uint16_t micro_ver = versionInfo.size() > 2 ? (uint16_t) stoi(versionInfo[2]) : 0;
+    // version comes from a third-party appinfo.json, so a component may be
+    // anything at all. stoi threw std::invalid_argument out of the whole scan;
+    // treat an unparseable component as 0 the way a missing one already was.
+    auto versionPart = [&versionInfo](size_t index) -> uint16_t {
+        uint16_t part = 0;
+        if (index < versionInfo.size())
+            boost::conversion::try_lexical_convert(versionInfo[index], part);
+        return part;
+    };
+    uint16_t major_ver = versionPart(0);
+    uint16_t minor_ver = versionPart(1);
+    uint16_t micro_ver = versionPart(2);
     m_intVersion = { major_ver, minor_ver, micro_ver };
 
     // app_type
@@ -466,7 +475,6 @@ bool AppDescription::readAsset()
 
     for (const auto& key : ASSETS_SUPPORTED) {
         string value;
-        string variant_path;
 
         if (!JValueUtil::getValue(m_appinfo, key, value) || value.empty()) {
             continue;
