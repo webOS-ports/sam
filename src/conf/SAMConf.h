@@ -44,16 +44,16 @@ public:
         return ApplicationPaths;
     }
 
-    const string& getAppShellRunnerPath()
+    string getAppShellRunnerPath()
     {
-        static string AppShellRunnerPath = "/usr/bin/app-shell/run_app_shell";
+        string AppShellRunnerPath = "/usr/bin/app-shell/run_app_shell";
         JValueUtil::getValue(m_readOnlyDatabase, "AppShellRunnerPath", AppShellRunnerPath);
         return AppShellRunnerPath;
     }
 
-    const string& getBrowserShellRunnerPath()
+    string getBrowserShellRunnerPath()
     {
-        static string BrowserShellRunnerPath = "/usr/bin/browser-shell/run_browser_shell";
+        string BrowserShellRunnerPath = "/usr/bin/browser-shell/run_browser_shell";
         JValueUtil::getValue(m_readOnlyDatabase, "BrowserShellRunnerPath", BrowserShellRunnerPath);
         return BrowserShellRunnerPath;
     }
@@ -72,37 +72,37 @@ public:
         return LaunchPointDBKind;
     }
 
-    const string& getDevModePath()
+    string getDevModePath()
     {
-        static string DevModePath = "/var/luna/preferences/devmode_enabled";
+        string DevModePath = "/var/luna/preferences/devmode_enabled";
         JValueUtil::getValue(m_readOnlyDatabase, "DevModePath", DevModePath);
         return DevModePath;
     }
 
-    const string& getJailerPath()
+    string getJailerPath()
     {
-        static string JailerPath = "/usr/bin/jailer";
+        string JailerPath = "/usr/bin/jailer";
         JValueUtil::getValue(m_readOnlyDatabase, "JailerPath", JailerPath);
         return JailerPath;
     }
 
-    const string& getJailModePath()
+    string getJailModePath()
     {
-        static string JailModePath = "/var/luna/preferences/jailer_disabled";
+        string JailModePath = "/var/luna/preferences/jailer_disabled";
         JValueUtil::getValue(m_readOnlyDatabase, "JailModePath", JailModePath);
         return JailModePath;
     }
 
-    const string& getQmlRunnerPath()
+    string getQmlRunnerPath()
     {
-        static string QmlRunnerPath = "/usr/bin/qml-runner";
+        string QmlRunnerPath = "/usr/bin/qml-runner";
         JValueUtil::getValue(m_readOnlyDatabase, "QmlRunnerPath", QmlRunnerPath);
         return QmlRunnerPath;
     }
 
-    const string& getRespawnedPath()
+    string getRespawnedPath()
     {
-        static string RespawnedPath = "/tmp/sam-respawned";
+        string RespawnedPath = "/tmp/sam-respawned";
         JValueUtil::getValue(m_readOnlyDatabase, "RespawnedPath", RespawnedPath);
         return RespawnedPath;
     }
