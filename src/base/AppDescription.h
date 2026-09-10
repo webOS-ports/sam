@@ -310,12 +310,14 @@ public:
 private:
     static const vector<string> PROPS_PROHIBITED;
     static const vector<string> PROPS_IMAGES;
+    static const vector<string> PROPS_PATHS;
     static const vector<string> ASSETS_SUPPORTED;
     static const string CLASS_NAME;
 
     AppDescription& operator=(const AppDescription& appDesc) = delete;
     AppDescription(const AppDescription& appDesc) = delete;
 
+    string anchorLocalePath(const string& relativeLocaleDir, const string& value);
     bool loadAppinfo();
     bool readAppinfo();
     bool readAsset();

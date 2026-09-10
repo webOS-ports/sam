@@ -37,6 +37,9 @@ const vector<string> AppDescription::ASSETS_SUPPORTED = {
 const vector<string> AppDescription::PROPS_IMAGES = {
     "icon", "largeIcon", "bgImage", "splashBackground", "miniicon", "mediumIcon", "splashicon", "imageForRecents"
 };
+const vector<string> AppDescription::PROPS_PATHS = {
+    "main"
+};
 
 const string AppDescription::CLASS_NAME = "AppDescription";
 
@@ -266,6 +269,56 @@ JValue AppDescription::getJson(JValue& properties)
     return result;
 }
 
+// Anchor a path taken from a localized appinfo.json against the directory it is
+// really relative to, and hand it back relative to the application folder.
+//
+// Two conventions are in use and they need opposite handling:
+//
+//   Legacy Palm/HP applications write the path relative to the localization
+//   dir - com.palm.app.accounts has "main": "../../index.html" and
+//   "icon": "../../icon.png" - so it has to be re-anchored against that dir.
+//
+//   The webOS OSE applications write it relative to the application root -
+//   every com.webos.app.* Enact application has "main": "index.multi.html" -
+//   and re-anchoring those yields resources/<locale>/index.multi.html, which
+//   does not exist. SAM then hands WAM an entry point it cannot stat, and the
+//   application comes up as an empty card.
+//
+// Rather than guess from the shape of the value, form both candidates and keep
+// whichever is actually on disk, preferring the localization-relative one so a
+// genuinely localized asset still wins over a same-named file at the root.
+//
+// The result must not start with '/': applyFolderPath() takes a leading slash
+// to mean the path is already absolute and returns without prefixing
+// m_folderPath, so an icon anchored as "/icon.png" - or, before this was
+// canonicalised, "/resources/en/../../icon.png" - is published as-is and
+// resolves nowhere. That is why com.palm.app.accounts had a working main and no
+// icon in the launcher.
+string AppDescription::anchorLocalePath(const string& relativeLocaleDir, const string& value)
+{
+    auto relativise = [](const string& path) -> string {
+        gchar* resolved = g_canonicalize_filename(path.c_str(), "/");
+        string result = (resolved != nullptr) ? resolved : path;
+        if (resolved != nullptr)
+            g_free(resolved);
+        if (!result.empty() && result[0] == '/')
+            result.erase(0, 1);
+        return result;
+    };
+
+    string localeRelative = relativise(relativeLocaleDir + value);
+    if (File::isFile(File::join(m_folderPath, localeRelative)))
+        return localeRelative;
+
+    string rootRelative = relativise(value);
+    if (File::isFile(File::join(m_folderPath, rootRelative)))
+        return rootRelative;
+
+    // Neither is present. Keep the localization-relative form so a value naming
+    // something generated later is not silently rewritten.
+    return localeRelative;
+}
+
 bool AppDescription::loadAppinfo()
 {
     // Specify application description depending on available locale string.
@@ -290,11 +343,19 @@ bool AppDescription::loadAppinfo()
     string resourcePath = m_folderPath + "/resources/" + SAMConf::getInstance().getLanguage() + "/";
     localizationDirs.push_back(resourcePath);
 
-    resourcePath += SAMConf::getInstance().getScript() + "/";
-    localizationDirs.push_back(resourcePath);
+    // Skip empty locale components: for a locale without a script (e.g. en-US)
+    // the script dir would duplicate the language dir with a trailing "//",
+    // applying the same localized appinfo.json twice and corrupting
+    // re-anchored relative paths.
+    if (!SAMConf::getInstance().getScript().empty()) {
+        resourcePath += SAMConf::getInstance().getScript() + "/";
+        localizationDirs.push_back(resourcePath);
+    }
 
-    resourcePath += SAMConf::getInstance().getRegion() + "/";
-    localizationDirs.push_back(std::move(resourcePath));
+    if (!SAMConf::getInstance().getRegion().empty()) {
+        resourcePath += SAMConf::getInstance().getRegion() + "/";
+        localizationDirs.push_back(std::move(resourcePath));
+    }
 
     // apply localization (overwrite from low to high)
     for (const auto& localizationDir : localizationDirs) {
@@ -340,9 +401,10 @@ bool AppDescription::loadAppinfo()
                     continue;
             }
 
-            auto it = find(PROPS_IMAGES.begin(), PROPS_IMAGES.end(), key);
-            if (it != PROPS_IMAGES.end()) {
-                m_appinfo.put(key, RelativeLocaleAppinfoPath + localeAppinfo[key].asString());
+            if (find(PROPS_IMAGES.begin(), PROPS_IMAGES.end(), key) != PROPS_IMAGES.end() ||
+                find(PROPS_PATHS.begin(), PROPS_PATHS.end(), key) != PROPS_PATHS.end()) {
+                m_appinfo.put(key, anchorLocalePath(RelativeLocaleAppinfoPath,
+                                                    localeAppinfo[key].asString()));
             } else {
                 m_appinfo.put(key, localeAppinfo[key]);
             }
