@@ -47,7 +47,7 @@ bool AppDescriptionList::compare(AppDescriptionPtr me, AppDescriptionPtr another
         return false;
 
     // if same version, check type_by_dir priority
-    if ((int) me->getAppLocation() > (int) me->getAppLocation())
+    if ((int) me->getAppLocation() > (int) another->getAppLocation())
         return true;
 
     return false;

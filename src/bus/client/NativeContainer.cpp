@@ -67,8 +67,8 @@ void NativeContainer::initialize()
 {
     // Getting global environments
     gchar **variables = g_listenv();
-    gsize size = variables ? g_strv_length(variables) : 0;
-    for (uint i = 0; i < size; i++) {
+    const gsize variableCount = variables ? g_strv_length(variables) : 0;
+    for (gsize i = 0; i < variableCount; i++) {
     const gchar *value = g_getenv(variables[i]);
         if (value != NULL) {
             m_environments[variables[i]] = value;
@@ -81,8 +81,8 @@ void NativeContainer::initialize()
         m_nativeRunninApps = pbnjson::Array();
         return;
     }
-    size = m_nativeRunninApps.arraySize();
-    for (int i = size - 1; i >= 0; --i) {
+    const ssize_t runningCount = m_nativeRunninApps.arraySize();
+    for (ssize_t i = runningCount - 1; i >= 0; --i) {
         RunningAppPtr runningApp = RunningAppList::getInstance().createByJson(m_nativeRunninApps[i]);
         if (runningApp == nullptr) {
             continue;
@@ -198,19 +198,21 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
     runningApp->getLinuxProcess().addEnv("APP_ID", runningApp->getAppId());
     runningApp->getLinuxProcess().addEnv("DISPLAY_ID", std::to_string(runningApp->getDisplayId()));
     runningApp->getLinuxProcess().addEnv("LS2_NAME", Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
-    // force the use of the webos waylandinputcontext plugin (see above)
+    // The webos waylandinputcontext plugin registers under both "wayland" and
+    // "wayland-webos", but since Qt 6.10 only the latter reaches it: Qt
+    // intercepts the literal "wayland" itself and builds a context only when the
+    // compositor advertises text_input, which LSM does not. Asking for "wayland"
+    // therefore leaves an app with no input context and no virtual keyboard.
     runningApp->getLinuxProcess().addEnv("QT_IM_MODULE", "wayland-webos");
     runningApp->getLinuxProcess().addEnv("QT_WAYLAND_SHELL_INTEGRATION", "webos");
 
-    if (AppType::AppType_Native_Qml == type) {
-        if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
+    if (AppType::AppType_Native_Qml == type || AppType::AppType_Native == type) {
+        if (runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
             runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "QtQuick.Controls.LuneOS");
     }
 
     if (AppType::AppType_Native == type) {
         Logger::info(getClassName(), __FUNCTION__, runningApp->getAppId(), "Adding LuneOS environment");
-        if(runningApp->getLaunchPoint()->getAppDesc()->useLuneOSStyle())
-            runningApp->getLinuxProcess().addEnv("QT_QUICK_CONTROLS_STYLE", "QtQuick.Controls.LuneOS");
         runningApp->getLinuxProcess().addEnv("QT_QPA_PLATFORM", "wayland-egl");
     }
 
@@ -275,8 +277,8 @@ void NativeContainer::kill(RunningAppPtr runningApp)
 
 void NativeContainer::removeItem(GPid pid)
 {
-    gsize size = getInstance().m_nativeRunninApps.arraySize();
-    for (gsize i = 0; i < size; ++i) {
+    const ssize_t size = getInstance().m_nativeRunninApps.arraySize();
+    for (ssize_t i = 0; i < size; ++i) {
         if (m_nativeRunninApps[i]["processId"].asNumber<int>() == pid) {
             m_nativeRunninApps.remove(i);
             RuntimeInfo::getInstance().setValue(KEY_NATIVE_RUNNING_APPS, m_nativeRunninApps);
