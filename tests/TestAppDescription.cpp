@@ -86,6 +86,10 @@ protected:
     }
 
     // Build <root>/<appId>/appinfo.json and scan it.
+    //
+    // appinfo must carry id, main, icon, type and title: JValueUtil::getSchema()
+    // falls back to AllSchema when the schemas are not installed, so a manifest
+    // missing a required field passes on a build host and fails on a device.
     AppDescriptionPtr scanApp(const string& appId, const string& appinfo)
     {
         m_tree.write(appId + "/appinfo.json", appinfo);
@@ -98,10 +102,22 @@ protected:
     string m_previousHome;
 };
 
+TEST_F(AppDescriptionScanTest, ScansASyntheticApplication)
+{
+    // Guards the fixtures themselves: if the manifests stop satisfying the
+    // schema, this says so directly instead of every scan-based test failing
+    // on some later assertion.
+    AppDescriptionPtr appDesc = scanApp("com.webos.app.sanity",
+        R"({"id":"com.webos.app.sanity","title":"Sanity","main":"index.html","icon":"icon.png","type":"web","version":"1.0.0"})");
+
+    EXPECT_TRUE(appDesc->isScanned()) << "synthetic appinfo.json failed to scan; "
+                                         "check it against ApplicationDescription.schema";
+}
+
 TEST_F(AppDescriptionScanTest, ParsesAThreeComponentVersion)
 {
     AppDescriptionPtr appDesc = scanApp("com.webos.app.test",
-        R"({"id":"com.webos.app.test","title":"Test","main":"index.html","type":"web","version":"2.5.7"})");
+        R"({"id":"com.webos.app.test","title":"Test","main":"index.html","icon":"icon.png","type":"web","version":"2.5.7"})");
 
     const AppIntVersion& version = appDesc->getIntVersion();
     EXPECT_EQ(2, std::get<0>(version));
@@ -115,24 +131,24 @@ TEST_F(AppDescriptionScanTest, SurvivesANonNumericVersion)
     // taking every remaining application with it.
     EXPECT_NO_THROW({
         scanApp("com.webos.app.beta",
-            R"({"id":"com.webos.app.beta","title":"Beta","main":"index.html","type":"web","version":"1.0.0-beta"})");
+            R"({"id":"com.webos.app.beta","title":"Beta","main":"index.html","icon":"icon.png","type":"web","version":"1.0.0-beta"})");
     });
 
     EXPECT_NO_THROW({
         scanApp("com.webos.app.junk",
-            R"({"id":"com.webos.app.junk","title":"Junk","main":"index.html","type":"web","version":"not.a.version"})");
+            R"({"id":"com.webos.app.junk","title":"Junk","main":"index.html","icon":"icon.png","type":"web","version":"not.a.version"})");
     });
 
     EXPECT_NO_THROW({
         scanApp("com.webos.app.empty",
-            R"({"id":"com.webos.app.empty","title":"Empty","main":"index.html","type":"web","version":""})");
+            R"({"id":"com.webos.app.empty","title":"Empty","main":"index.html","icon":"icon.png","type":"web","version":""})");
     });
 }
 
 TEST_F(AppDescriptionScanTest, TreatsAnUnparseableVersionComponentAsZero)
 {
     AppDescriptionPtr appDesc = scanApp("com.webos.app.partial",
-        R"({"id":"com.webos.app.partial","title":"Partial","main":"index.html","type":"web","version":"3.x.9"})");
+        R"({"id":"com.webos.app.partial","title":"Partial","main":"index.html","icon":"icon.png","type":"web","version":"3.x.9"})");
 
     const AppIntVersion& version = appDesc->getIntVersion();
     EXPECT_EQ(3, std::get<0>(version));
@@ -143,7 +159,7 @@ TEST_F(AppDescriptionScanTest, TreatsAnUnparseableVersionComponentAsZero)
 TEST_F(AppDescriptionScanTest, RejectsAFolderThatDoesNotMatchTheAppId)
 {
     m_tree.write("some-other-folder/appinfo.json",
-        R"({"id":"com.webos.app.mismatch","title":"X","main":"index.html","type":"web","version":"1.0.0"})");
+        R"({"id":"com.webos.app.mismatch","title":"X","main":"index.html","icon":"icon.png","type":"web","version":"1.0.0"})");
 
     AppDescriptionPtr appDesc = std::make_shared<AppDescription>("com.webos.app.mismatch");
     EXPECT_FALSE(appDesc->scan(m_tree.path("some-other-folder"), AppLocation::AppLocation_System_ReadOnly));
@@ -175,13 +191,13 @@ TEST_F(AppDescriptionScanTest, MarksOrgWebosportsAsPrivileged)
 TEST_F(AppDescriptionScanTest, ReadsTheLuneOSAppinfoFlags)
 {
     AppDescriptionPtr plain = scanApp("com.webos.app.plain",
-        R"({"id":"com.webos.app.plain","title":"Plain","main":"index.html","type":"web","version":"1.0.0"})");
+        R"({"id":"com.webos.app.plain","title":"Plain","main":"index.html","icon":"icon.png","type":"web","version":"1.0.0"})");
     EXPECT_FALSE(plain->useLuneOSStyle());
     EXPECT_FALSE(plain->hasNoWindow());
     EXPECT_FALSE(plain->isTrusted());
 
     AppDescriptionPtr flagged = scanApp("com.webos.app.flagged",
-        R"({"id":"com.webos.app.flagged","title":"Flagged","main":"index.html","type":"web","version":"1.0.0",)"
+        R"({"id":"com.webos.app.flagged","title":"Flagged","main":"index.html","icon":"icon.png","type":"web","version":"1.0.0",)"
         R"("useLuneOSStyle":true,"noWindow":true,"trustLevel":"trusted"})");
     EXPECT_TRUE(flagged->useLuneOSStyle());
     EXPECT_TRUE(flagged->hasNoWindow());

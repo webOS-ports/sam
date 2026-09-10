@@ -46,8 +46,21 @@ half the width they are on the other targets.
     qemu-arm     -L <sysroot> -E LD_LIBRARY_PATH=<sysroot>/usr/lib <build>/tests/sam_test
     qemu-aarch64 -L <sysroot> -E LD_LIBRARY_PATH=<sysroot>/usr/lib <build>/tests/sam_test
 
-The suite passes 52/52 on x86-64, armv7 and aarch64 (the latter against the
-halium-arm64 sysroot).
+The suite passes on x86-64, armv7 and aarch64 (the latter against the
+halium-arm64 sysroot), and on a real device.
+
+Running it on a device is worth doing rather than trusting emulation:
+`JValueUtil::getSchema()` falls back to `JSchema::AllSchema()` when the schemas
+are not installed, so a synthetic `appinfo.json` missing a field the real
+`ApplicationDescription.schema` requires passes on a build host and fails on a
+target. Push the binary and run it there:
+
+    adb push tests/sam_test /tmp/sam_test
+    adb shell 'chmod 0755 /tmp/sam_test && cd /tmp && HOME=/tmp/samtest-home ./sam_test'
+
+`AppDescriptionScanTest.ScansASyntheticApplication` guards exactly that: if the
+fixtures stop satisfying the schema it says so directly, instead of every
+scan-based test failing on some later assertion.
 
 ## What is covered, and why
 

@@ -35,6 +35,7 @@ protected:
         const string relative = slot + "/" + appId;
         m_tree.write(relative + "/appinfo.json",
                      "{\"id\":\"" + appId + "\",\"title\":\"T\",\"main\":\"index.html\","
+                     "\"icon\":\"icon.png\","
                      "\"type\":\"web\",\"version\":\"" + version + "\"}");
 
         AppDescriptionPtr appDesc = std::make_shared<AppDescription>(appId);

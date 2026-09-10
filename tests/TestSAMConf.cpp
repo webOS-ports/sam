@@ -128,7 +128,7 @@ class LocalizedAppinfoTest : public SAMConfLocaleTest {
 protected:
     static const char* rootAppinfo()
     {
-        return R"({"id":"com.webos.app.l10n","title":"Root","main":"index.html",)"
+        return R"({"id":"com.webos.app.l10n","title":"Root","main":"index.html","icon":"icon.png",)"
                R"("type":"web","version":"1.0.0"})";
     }
 
