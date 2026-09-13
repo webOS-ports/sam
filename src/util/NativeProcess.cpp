@@ -17,6 +17,8 @@
 #include <unistd.h>
 
 #include "util/NativeProcess.h"
+
+#include "util/SignalHandler.h"
 #include "util/Logger.h"
 
 const string NativeProcess::CLASS_NAME = "NativeProcess";
@@ -31,6 +33,11 @@ void NativeProcess::convertEnvToStr(const map<string, string>& src, vector<strin
 void NativeProcess::prepareSpawn(gpointer user_data)
 {
     // This function is called in child context.
+    // SAM blocks the signals it reads through its signalfd, and a signal mask
+    // survives exec - so without this every application SAM launches would
+    // inherit SIGTERM blocked and could not be shut down by it.
+    SignalHandler::resetForChild();
+
     // setpgid is needed to kill all processes which are created by application at once
     const int result = setpgid(getpid(), 0);
     if (result == -1) {
