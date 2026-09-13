@@ -77,9 +77,14 @@ regression shows up as a failing test rather than as a field report:
 | `AppDescriptionCompareTest` | Version ordering and the `appLocation` tiebreak that a self-comparison had disabled. |
 | `SAMConfLocaleTest` | `setLocale()` round-trip, persistence, reload, and that a locale removed from the config reads back as `""` rather than as the previous value. |
 | `LocalizedAppinfoTest` | Which `resources/<language>[/<script>][/<region>]` overlays a scan applies, and that a legacy relative `main` is re-anchored exactly once. |
+| `SignalHandlerTest` | That signals arrive as main-loop events and not through a handler: no `sigaction` handler installed, the handled set blocked, `SIGPIPE` left at `SIG_IGN`, and a raised `SIGTERM` read back off the signalfd instead of killing the process. |
 
 Verified by mutation: reintroducing each original defect makes the
-corresponding test fail. One case does **not** hold, and is called out in the
+corresponding test fail. For `SignalHandlerTest` that was done two ways -
+reinstalling an `SA_SIGINFO` handler alongside the signalfd fails
+`InstallsNoHandlerForTheSignalsItTakes`, and skipping the `sigprocmask()` fails
+`BlocksThoseSignalsProcessWide` and then kills the test binary outright on the
+next case, which is the point. One case does **not** hold, and is called out in the
 test itself — removing the "skip empty locale components" change leaves every
 test green, because `resources/en//` and `resources/en/` are the same directory
 to POSIX and re-applying an overlay is idempotent. That change is tidiness
@@ -94,7 +99,8 @@ grow a constructor that takes its dependencies.
 
 Nothing here starts the daemon. `sam` registering on the bus, answering
 `launch`, and driving an application through its lifecycle are all untested by
-this suite and still need a device or a booted image. Treat a green run as
+this suite and still need a device or a booted image.
+ Treat a green run as
 "the logic these tests reach is sound on this architecture", not as
 "safe to ship".
 
