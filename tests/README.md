@@ -100,7 +100,37 @@ grow a constructor that takes its dependencies.
 Nothing here starts the daemon. `sam` registering on the bus, answering
 `launch`, and driving an application through its lifecycle are all untested by
 this suite and still need a device or a booted image.
- Treat a green run as
+
+`AbsLunaClient::releaseCall()` is in that category too, and it is worth being
+explicit about because it fixes a crash. `LS::Call::cancel()` clears its token
+only when `LSCallCancel()` succeeds; during shutdown the hub is already gone, it
+answers "Could not find call N to cancel", and the `Call` goes on reporting
+`isActive()`. The bus clients are function-local statics, so that stale `Call`
+is destroyed from `exit()` - after `ApplicationManager::detach()` has freed the
+`LSHandle` it points at - and `~Call()` cancels once more into freed memory:
+
+    #0 ___pthread_mutex_lock (mutex=0x17)
+    #1 _CallMapLock ()
+    #2 LSCallCancel ()
+    #3 LS::Call::cancel (this=ISingleton<WAM>::_instance+416)
+    #4 LS::Call::~Call ()
+    #5 WAM::~WAM ()
+    #6 __run_exit_handlers ()
+
+Reproducing it needs a real bus *and* a real shutdown: `systemctl stop sam` on
+its own exits cleanly, because the hub is still up and the cancel succeeds. It
+was verified on a qemux86-64 image instead - segfault on most shutdowns before,
+none in five consecutive reboots after, with the backtrace above taken from a
+core dumped on the way down. Reproduce with:
+
+    # on target, capture a core from the shutdown path
+    printf 'kernel.core_pattern=/var/cores/core.%e.%p\n' > /etc/sysctl.d/99-sam-core.conf
+    mkdir -p /var/cores && systemctl reboot
+    # then, after it comes back
+    ls /var/cores/ | grep sam        # a core here means the defect is back
+
+A unit test would need a seam that lets a `Call` be given a token without a
+hub behind it, which is the same missing seam the paragraph above describes. Treat a green run as
 "the logic these tests reach is sound on this architecture", not as
 "safe to ship".
 

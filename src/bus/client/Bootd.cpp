@@ -33,7 +33,7 @@ void Bootd::onInitialzed()
 
 void Bootd::onFinalized()
 {
-    m_getBootStatusCall.cancel();
+    releaseCall(m_getBootStatusCall);
 }
 
 void Bootd::onServerStatusChanged(bool isConnected)

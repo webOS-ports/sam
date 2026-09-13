@@ -65,7 +65,7 @@ void LSM::onInitialzed()
 
 void LSM::onFinalized()
 {
-    m_getForegroundAppInfoCall.cancel();
+    releaseCall(m_getForegroundAppInfoCall);
 }
 
 void LSM::onServerStatusChanged(bool isConnected)

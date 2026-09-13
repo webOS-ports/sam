@@ -91,6 +91,12 @@ void AbsLunaClient::initialize()
 
 void AbsLunaClient::finalize()
 {
-    m_statusCall.cancel();
+    releaseCall(m_statusCall);
     onFinalized();
+}
+
+void AbsLunaClient::releaseCall(Call& call)
+{
+    call.cancel();
+    call = Call();
 }
