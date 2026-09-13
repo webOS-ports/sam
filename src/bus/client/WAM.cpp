@@ -93,8 +93,8 @@ void WAM::onInitialzed()
 
 void WAM::onFinalized()
 {
-    m_listRunningAppsCall.cancel();
-    m_discardCodeCacheCall.cancel();
+    releaseCall(m_listRunningAppsCall);
+    releaseCall(m_discardCodeCacheCall);
 }
 
 void WAM::onServerStatusChanged(bool isConnected)

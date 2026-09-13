@@ -38,7 +38,7 @@ void Configd::onInitialzed()
 
 void Configd::onFinalized()
 {
-    m_getConfigsCall.cancel();
+    releaseCall(m_getConfigsCall);
 }
 
 void Configd::onServerStatusChanged(bool isConnected)

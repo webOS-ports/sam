@@ -77,7 +77,7 @@ void AppInstallService::onInitialzed()
 
 void AppInstallService::onFinalized()
 {
-    m_statusCall.cancel();
+    releaseCall(m_statusCall);
 }
 
 void AppInstallService::onServerStatusChanged(bool isConnected)
