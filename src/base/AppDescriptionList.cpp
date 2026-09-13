@@ -47,7 +47,7 @@ bool AppDescriptionList::compare(AppDescriptionPtr me, AppDescriptionPtr another
         return false;
 
     // if same version, check type_by_dir priority
-    if ((int) me->getAppLocation() > (int) me->getAppLocation())
+    if ((int) me->getAppLocation() > (int) another->getAppLocation())
         return true;
 
     return false;
@@ -77,7 +77,7 @@ void AppDescriptionList::scanApp(const string& appId)
         return;
     }
 
-    JValue applicationPaths = SAMConf::getInstance().getApplicationPaths();
+    const JValue applicationPaths = SAMConf::getInstance().getApplicationPaths();
     for (int i = applicationPaths.arraySize() - 1; i >= 0; i--) {
         string path = "";
         string typeByDir = "";
@@ -87,7 +87,7 @@ void AppDescriptionList::scanApp(const string& appId)
             continue;
         }
 
-        AppLocation appLocation = AppDescription::toAppLocation(typeByDir);
+        const AppLocation appLocation = AppDescription::toAppLocation(typeByDir);
         if (path.empty() || typeByDir.empty() || appLocation == AppLocation::AppLocation_None) {
             continue;
         }
@@ -95,7 +95,7 @@ void AppDescriptionList::scanApp(const string& appId)
             continue;
         }
 
-        string folderPath = File::join(path, appId);
+        const string folderPath = File::join(path, appId);
         if (!File::isDirectory(folderPath)) {
             Logger::warning(getClassName(), __FUNCTION__, appId, folderPath + " is not exist");
             continue;
@@ -117,7 +117,7 @@ void AppDescriptionList::scanApp(const string& appId)
 
 void AppDescriptionList::scanFull()
 {
-    JValue applicationPaths = SAMConf::getInstance().getApplicationPaths();
+    const JValue applicationPaths = SAMConf::getInstance().getApplicationPaths();
     for (int i = 0; i < applicationPaths.arraySize(); i++) {
         string path = "";
         string typeByDir = "";
@@ -129,7 +129,7 @@ void AppDescriptionList::scanFull()
             continue;
         }
 
-        AppLocation appLocation = AppDescription::toAppLocation(typeByDir);
+        const AppLocation appLocation = AppDescription::toAppLocation(typeByDir);
         if (path.empty() || typeByDir.empty() || appLocation == AppLocation::AppLocation_None) {
             Logger::warning(getClassName(), __FUNCTION__,
                             Logger::format("Invalid Configuration: path(%s) typeByDir(%s)", path.c_str(), typeByDir.c_str()));
@@ -154,7 +154,7 @@ void AppDescriptionList::scanFull()
 void AppDescriptionList::scanDir(const string& path, const AppLocation& appLocation)
 {
     dirent** entries = NULL;
-    int entryCount = ::scandir(path.c_str(), &entries, 0, alphasort);
+    const int entryCount = ::scandir(path.c_str(), &entries, 0, alphasort);
     if (entries == NULL || entryCount == 0) {
         Logger::warning(getClassName(), __FUNCTION__, "Failed to call scandir",
                         Logger::format("path(%s) appLocation(%s)", path.c_str(), AppDescription::toString(appLocation)));
@@ -165,7 +165,7 @@ void AppDescriptionList::scanDir(const string& path, const AppLocation& appLocat
         if (!entries[i] || entries[i]->d_name[0] == '.') {
             continue;
         }
-        string folderPath = File::join(path, entries[i]->d_name);
+        const string folderPath = File::join(path, entries[i]->d_name);
         if (SAMConf::getInstance().isBlockedApp(entries[i]->d_name)) {
             Logger::info(getClassName(), __FUNCTION__, "BLOCKED",
                          Logger::format("forderPath(%s)", folderPath.c_str()));

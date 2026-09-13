@@ -80,13 +80,13 @@ RunningAppPtr RunningAppList::createByJson(const JValue& json)
 
 RunningAppPtr RunningAppList::createByAppId(const string& appId)
 {
-    string launchPointId = appId + "_default";
+    const string launchPointId = appId + "_default";
     return createByLaunchPointId(launchPointId);
 }
 
 RunningAppPtr RunningAppList::createByLaunchPointId(const string& launchPointId)
 {
-    LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
+    const LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
     if (launchPoint == nullptr) {
         Logger::warning(getClassName(), __FUNCTION__, "Cannot find launchPoint");
         return nullptr;
@@ -107,7 +107,7 @@ RunningAppPtr RunningAppList::getByLunaTask(LunaTaskPtr lunaTask, bool verifyLau
     string appId = lunaTask->getAppId();
 
     if (appId.empty() && !launchPointId.empty()) {
-        LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
+        const LaunchPointPtr launchPoint = LaunchPointList::getInstance().getByLaunchPointId(launchPointId);
         if (launchPoint) {
             appId = launchPoint->getAppId();
         }

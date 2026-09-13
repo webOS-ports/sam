@@ -33,7 +33,7 @@ class Configd : public ISingleton<Configd>,
                 public AbsLunaClient {
 friend class ISingleton<Configd>;
 public:
-    virtual ~Configd();
+    virtual ~Configd() override;
 
     void addRequiredKey(const string& key)
     {

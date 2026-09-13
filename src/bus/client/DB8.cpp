@@ -48,7 +48,7 @@ DB8::~DB8()
 
 bool DB8::insertLaunchPoint(JValue& json)
 {
-    static string method = string("luna://") + getName() + string("/put");
+    static const string method = string("luna://") + getName() + string("/put");
 
     if (json.isNull())
         return false;
@@ -76,7 +76,7 @@ bool DB8::insertLaunchPoint(JValue& json)
 
 bool DB8::updateLaunchPoint(const JValue& props)
 {
-    static string method = string("luna://") + getName() + string("/merge");
+    static const string method = string("luna://") + getName() + string("/merge");
     JValue requestPayload = pbnjson::Object();
     JValue where = pbnjson::Array();
     JValue query = pbnjson::Object();
@@ -111,7 +111,7 @@ bool DB8::updateLaunchPoint(const JValue& props)
 
 void DB8::deleteLaunchPoint(const string& launchPointId)
 {
-    static string method = string("luna://") + getName() + string("/del");
+    static const string method = string("luna://") + getName() + string("/del");
     JValue requestPayload = pbnjson::Object();
     JValue where = pbnjson::Object();
 
@@ -188,7 +188,7 @@ bool DB8::onFind(LSHandle* sh, LSMessage* message, void* context)
     string type;
     AppDescriptionPtr appDesc = nullptr;
     LaunchPointPtr launchPoint = nullptr;
-    int size = results.arraySize();
+    const int size = results.arraySize();
     for (int i = 0; i < size; ++i) {
         if (!JValueUtil::getValue(results[i], "id", appId) ||
             !JValueUtil::getValue(results[i], "launchPointId", launchPointId) ||
@@ -227,7 +227,7 @@ bool DB8::onFind(LSHandle* sh, LSMessage* message, void* context)
 
 void DB8::find()
 {
-    static string method = string("luna://") + getName() + string("/find");
+    static const string method = string("luna://") + getName() + string("/find");
 
     JValue requestPayload = pbnjson::Object();
     requestPayload.put("query", pbnjson::Object());
@@ -274,7 +274,7 @@ bool DB8::onPutKind(LSHandle* sh, LSMessage* message, void* context)
 
 void DB8::putKind()
 {
-    static string method = string("luna://") + getName() + string("/putKind");
+    static const string method = string("luna://") + getName() + string("/putKind");
 
     JValue requestPayload = SAMConf::getInstance().getDBSchema();
     Logger::logCallRequest(getClassName(), __FUNCTION__, method, requestPayload);
@@ -314,7 +314,7 @@ bool DB8::onPutPermissions(LSHandle* sh, LSMessage* message, void* context)
 
 void DB8::putPermissions()
 {
-    static string method = string("luna://") + getName() + string("/putPermissions");
+    static const string method = string("luna://") + getName() + string("/putPermissions");
 
     JValue requestPayload = SAMConf::getInstance().getDBPermission();
     Logger::logCallRequest(getClassName(), __FUNCTION__, method, requestPayload);

@@ -31,7 +31,7 @@ class LaunchPointList : public ISingleton<LaunchPointList>,
                         public IClassName {
 friend class ISingleton<LaunchPointList>;
 public:
-    virtual ~LaunchPointList();
+    virtual ~LaunchPointList() override;
 
     void clear();
     void sort();

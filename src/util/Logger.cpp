@@ -56,9 +56,9 @@ void Logger::logAPIResponse(const string& className, const string& functionName,
 void Logger::logCallRequest(const string& className, const string& functionName, const string& method, JValue& requestPayload)
 {
     if (isVerbose())
-        getInstance().write(LogLevel_INFO, className, functionName, "CallRequest", method.c_str(), requestPayload.stringify("    "));
+        getInstance().write(LogLevel_INFO, className, functionName, "CallRequest", method, requestPayload.stringify("    "));
     else
-        getInstance().write(LogLevel_INFO, className, functionName, "CallRequest", method.c_str(), EMPTY);
+        getInstance().write(LogLevel_INFO, className, functionName, "CallRequest", method, EMPTY);
 }
 
 void Logger::logCallResponse(const string& className, const string& functionName, Message& response, JValue& responsePayload)
@@ -72,9 +72,9 @@ void Logger::logCallResponse(const string& className, const string& functionName
 void Logger::logSubscriptionRequest(const string& className, const string& functionName, const string& method, JValue& requestPayload)
 {
     if (isVerbose())
-        getInstance().write(LogLevel_INFO, className, functionName, "SubscriptionRequest", method.c_str(), requestPayload.stringify("    "));
+        getInstance().write(LogLevel_INFO, className, functionName, "SubscriptionRequest", method, requestPayload.stringify("    "));
     else
-        getInstance().write(LogLevel_INFO, className, functionName, "SubscriptionRequest", method.c_str(), EMPTY);
+        getInstance().write(LogLevel_INFO, className, functionName, "SubscriptionRequest", method, EMPTY);
 }
 
 void Logger::logSubscriptionResponse(const string& className, const string& functionName, Message& response, JValue& subscriptionPayload)
@@ -168,8 +168,8 @@ Logger::Logger()
     : m_level(LogLevel_DEBUG),
       m_type(LogType_CONSOLE)
 {
-    setbuf(stdout, NULL);
-    char* LOG_VERBOSE = getenv("LOG_VERBOSE");
+    setvbuf(stdout, NULL, _IONBF, 0);
+    char const* LOG_VERBOSE = getenv("LOG_VERBOSE");
     if (LOG_VERBOSE != nullptr) {
         s_isVerbose = true;
     }

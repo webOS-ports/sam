@@ -48,14 +48,14 @@ SchemaChecker::~SchemaChecker()
 
 JValue SchemaChecker::getRequestPayloadWithSchema(Message& request)
 {
-    string method = request.getMethod();
+    const string method = request.getMethod();
     JValue requestPayload;
     if (m_APISchemaFiles.find(method) == m_APISchemaFiles.end() || m_APISchemaFiles[method].empty()) {
         requestPayload = JDomParser::fromString(request.getPayload());
         return requestPayload;
     }
 
-    string path = PATH_SAM_SCHEMAS + m_APISchemaFiles[method] + ".schema";
+    const string path = PATH_SAM_SCHEMAS + m_APISchemaFiles[method] + ".schema";
     requestPayload = JDomParser::fromString(request.getPayload(), JSchema::fromFile(path.c_str()));
     return requestPayload;
 }

@@ -111,8 +111,8 @@ void MainDaemon::stop()
 
 void MainDaemon::onGetBootStatus(const JValue& subscriptionPayload)
 {
-    bool coreBootDone;
-    if (!JValueUtil::getValue(subscriptionPayload, "signals", "core-boot-done", coreBootDone) && !coreBootDone) {
+    bool coreBootDone = false;
+    if (!JValueUtil::getValue(subscriptionPayload, "signals", "core-boot-done", coreBootDone) || !coreBootDone) {
         return;
     }
     m_isCBDGenerated = true;
@@ -123,7 +123,7 @@ void MainDaemon::onGetConfigs(const JValue& responsePayload)
 {
     JValue sysAssetFallbackPrecedence;
     JValue keepAliveApps;
-    JValue lifeCycle;
+    const JValue lifeCycle;
 
     if (JValueUtil::getValue(responsePayload, "configs", "system.sysAssetFallbackPrecedence", sysAssetFallbackPrecedence) && sysAssetFallbackPrecedence.isArray()) {
         SAMConf::getInstance().setSysAssetFallbackPrecedence(sysAssetFallbackPrecedence);

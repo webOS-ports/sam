@@ -32,7 +32,7 @@ class SettingService : public ISingleton<SettingService>,
                        public AbsLunaClient {
 friend class ISingleton<SettingService>;
 public:
-    virtual ~SettingService();
+    virtual ~SettingService() override;
 
     // API
     static bool onCheckParentalLock(LSHandle* sh, LSMessage* message, void* context);
@@ -54,7 +54,7 @@ private:
 
     SettingService();
 
-    void updateLocaleInfo(const JValue& localeInfo);
+    void updateLocaleInfo(const JValue& settings);
 
     string m_localeInfo;
 

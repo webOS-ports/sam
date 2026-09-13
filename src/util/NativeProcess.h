@@ -44,7 +44,7 @@ public:
 
     void addArgument(const string& argument);
     void addArgument(const string& option, const string& value);
-    void addEnv(map<string, string>& environments);
+    void addEnv(const map<string, string>& environments);
     void addEnv(const string& variable, const string& value);
 
     pid_t getPid() const
@@ -88,7 +88,7 @@ private:
     static const int MAX_ARGS = 16;
     static const int MAX_ENVP = 128;
 
-    static void convertEnvToStr(map<string, string>& src, vector<string>& dest);
+    static void convertEnvToStr(const map<string, string>& src, vector<string>& dest);
     static void prepareSpawn(gpointer user_data);
 
     string m_workingDirectory;

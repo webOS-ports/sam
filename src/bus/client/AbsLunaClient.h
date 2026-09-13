@@ -49,7 +49,7 @@ public:
     static JValue& getSubscriptionPayload();
 
     AbsLunaClient(const string& name);
-    virtual ~AbsLunaClient();
+    virtual ~AbsLunaClient() override;
 
     virtual void initialize() final;
     virtual void finalize() final;
@@ -67,6 +67,37 @@ public:
     boost::signals2::signal<void(bool)> EventServiceStatusChanged;
 
 protected:
+    /**
+     * Cancel a subscription and leave the Call inactive either way.
+     *
+     * LS::Call::cancel() clears its token only when LSCallCancel() succeeds.
+     * On the shutdown path it routinely does not: ls-hubd and the peer
+     * services are already gone, so the hub answers "Could not find call N to
+     * cancel" and the Call goes on reporting isActive().
+     *
+     * That matters because these clients are function-local statics. Their
+     * destructors run from exit(), long after MainDaemon::finalize() has
+     * called ApplicationManager::detach() and destroyed the LSHandle they
+     * still point at - and ~Call() calls cancel() one more time. LSCallCancel()
+     * then takes the call-map lock of a freed handle, which is the segfault in
+     * pthread_mutex_lock that SAM died with on most shutdowns:
+     *
+     *     #0 ___pthread_mutex_lock (mutex=0x17)
+     *     #1 _CallMapLock ()
+     *     #2 LSCallCancel ()
+     *     #3 LS::Call::cancel (this=ISingleton<WAM>::_instance+416)
+     *     #4 LS::Call::~Call ()
+     *     #5 WAM::~WAM ()
+     *     #6 __run_exit_handlers ()
+     *
+     * Move-assigning a fresh Call over it takes the token and the handle
+     * pointer from the (inactive) temporary, so isActive() goes false and the
+     * destructor at exit has nothing left to do. The subscription itself is
+     * not leaked: either the cancel above reached the hub, or the hub is gone
+     * and there is nothing left to cancel it on.
+     */
+    static void releaseCall(Call& call);
+
     virtual void onInitialzed() = 0;
     virtual void onFinalized() = 0;
     virtual void onServerStatusChanged(bool isConnected) = 0;
@@ -78,6 +109,7 @@ private:
 
     string m_name;
     bool m_isConnected;
+
     Call m_statusCall;
 };
 

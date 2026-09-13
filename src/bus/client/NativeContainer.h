@@ -36,7 +36,7 @@ friend class ISingleton<NativeContainer>;
 public:
     static void onKillChildProcess(GPid pid, gint status, gpointer data);
 
-    virtual ~NativeContainer();
+    virtual ~NativeContainer() override;
 
     virtual void initialize();
 

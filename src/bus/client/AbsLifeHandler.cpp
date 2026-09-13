@@ -17,7 +17,7 @@
 
 AbsLifeHandler& AbsLifeHandler::getLifeHandler(RunningAppPtr runningApp)
 {
-    AppType type = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
+    const AppType type = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
     // handler_type
     switch (type) {
     case AppType::AppType_Web:

@@ -21,7 +21,7 @@
 
 const string NativeProcess::CLASS_NAME = "NativeProcess";
 
-void NativeProcess::convertEnvToStr(map<string, string>& src, vector<string>& dest)
+void NativeProcess::convertEnvToStr(const map<string, string>& src, vector<string>& dest)
 {
     for (auto it = src.begin(); it != src.end(); ++it) {
         dest.push_back(it->first + "=" + it->second);
@@ -32,7 +32,7 @@ void NativeProcess::prepareSpawn(gpointer user_data)
 {
     // This function is called in child context.
     // setpgid is needed to kill all processes which are created by application at once
-    int result = setpgid(getpid(), 0);
+    const int result = setpgid(getpid(), 0);
     if (result == -1) {
         Logger::error(CLASS_NAME, __FUNCTION__, strerror(errno));
     }
@@ -64,7 +64,7 @@ void NativeProcess::addArgument(const string& option, const string& value)
     m_arguments.push_back(value);
 }
 
-void NativeProcess::addEnv(map<string, string>& environments)
+void NativeProcess::addEnv(const map<string, string>& environments)
 {
     for (auto it = environments.begin(); it != environments.end(); ++it) {
         m_environments[it->first] = it->second;
@@ -112,7 +112,7 @@ bool NativeProcess::run()
     }
 
     Logger::info(CLASS_NAME, __FUNCTION__, m_command, params);
-    gboolean result = g_spawn_async_with_fds(
+    const gboolean result = g_spawn_async_with_fds(
         m_workingDirectory.c_str(),
         argv,
         envp,
@@ -144,7 +144,7 @@ bool NativeProcess::term()
         Logger::error(CLASS_NAME, __FUNCTION__, "Process is not running");
         return false;
     }
-    int result = killpg(m_pid, SIGTERM);
+    const int result = killpg(m_pid, SIGTERM);
     if (result == -1) {
         Logger::error(CLASS_NAME, __FUNCTION__, strerror(errno));
         return false;
@@ -158,7 +158,7 @@ bool NativeProcess::kill()
         Logger::error(CLASS_NAME, __FUNCTION__, "Process is not running");
         return false;
     }
-    int result = killpg(m_pid, SIGKILL);
+    const int result = killpg(m_pid, SIGKILL);
     if (result == -1) {
         Logger::error(CLASS_NAME, __FUNCTION__, strerror(errno));
         return false;

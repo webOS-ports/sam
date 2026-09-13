@@ -29,8 +29,8 @@ SettingService::SettingService()
 {
     setClassName("SettingService");
 
-    JValue localeInfo = JDomParser::fromFile(PATH_LOCALE_INFO);
-    updateLocaleInfo(localeInfo);
+    const JValue settings = JDomParser::fromFile(PATH_LOCALE_INFO);
+    updateLocaleInfo(settings);
 }
 
 SettingService::~SettingService()
@@ -44,12 +44,12 @@ void SettingService::onInitialzed()
 
 void SettingService::onFinalized()
 {
-    m_getSystemSettingsCall.cancel();
+    releaseCall(m_getSystemSettingsCall);
 }
 
 void SettingService::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getSystemSettings");
+    static const string method = string("luna://") + getName() + string("/getSystemSettings");
 
     if (isConnected) {
         JValue requestPayload = pbnjson::Object();
@@ -125,7 +125,7 @@ Done:
 
 Call SettingService::checkParentalLock(LSFilterFunc func, const string& appId)
 {
-    static string method = string("luna://") + getName() + string("/batch");
+    static const string method = string("luna://") + getName() + string("/batch");
     JValue requestPayload = pbnjson::Object();
     JValue operations = pbnjson::Array();
 
@@ -175,21 +175,21 @@ bool SettingService::onLocaleChanged(LSHandle* sh, LSMessage* message, void* con
 
 void SettingService::updateLocaleInfo(const JValue& settings)
 {
-    string localeInfo;
+    string uiLocale;
 
     if (settings.isNull() || !settings.isObject()) {
         return;
     }
 
-    if (!JValueUtil::getValue(settings, "localeInfo", "locales", "UI", localeInfo)) {
+    if (!JValueUtil::getValue(settings, "localeInfo", "locales", "UI", uiLocale)) {
         return;
     }
 
-    if (localeInfo.empty() || localeInfo == m_localeInfo) {
+    if (uiLocale.empty() || uiLocale == m_localeInfo) {
         return;
     }
 
-    m_localeInfo = std::move(localeInfo);
+    m_localeInfo = std::move(uiLocale);
     string language;
     string script;
     string region;
@@ -199,7 +199,7 @@ void SettingService::updateLocaleInfo(const JValue& settings)
         script = "";
         region = "";
     } else {
-        icu::Locale icu_UI_locale = icu::Locale::createFromName(m_localeInfo.c_str());
+        const icu::Locale icu_UI_locale = icu::Locale::createFromName(m_localeInfo.c_str());
         language = icu_UI_locale.getLanguage();
         script = icu_UI_locale.getScript();
         region = icu_UI_locale.getCountry();

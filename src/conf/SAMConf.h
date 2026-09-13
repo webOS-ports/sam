@@ -31,7 +31,7 @@ class SAMConf : public ISingleton<SAMConf>,
                 public IClassName {
 friend class ISingleton<SAMConf> ;
 public:
-    virtual ~SAMConf();
+    virtual ~SAMConf() override;
 
     void initialize();
 
@@ -44,16 +44,16 @@ public:
         return ApplicationPaths;
     }
 
-    const string& getAppShellRunnerPath()
+    string getAppShellRunnerPath()
     {
-        static string AppShellRunnerPath = "/usr/bin/app-shell/run_app_shell";
+        string AppShellRunnerPath = "/usr/bin/app-shell/run_app_shell";
         JValueUtil::getValue(m_readOnlyDatabase, "AppShellRunnerPath", AppShellRunnerPath);
         return AppShellRunnerPath;
     }
 
-    const string& getBrowserShellRunnerPath()
+    string getBrowserShellRunnerPath()
     {
-        static string BrowserShellRunnerPath = "/usr/bin/browser-shell/run_browser_shell";
+        string BrowserShellRunnerPath = "/usr/bin/browser-shell/run_browser_shell";
         JValueUtil::getValue(m_readOnlyDatabase, "BrowserShellRunnerPath", BrowserShellRunnerPath);
         return BrowserShellRunnerPath;
     }
@@ -72,48 +72,48 @@ public:
         return LaunchPointDBKind;
     }
 
-    const string& getDevModePath()
+    string getDevModePath()
     {
-        static string DevModePath = "/var/luna/preferences/devmode_enabled";
+        string DevModePath = "/var/luna/preferences/devmode_enabled";
         JValueUtil::getValue(m_readOnlyDatabase, "DevModePath", DevModePath);
         return DevModePath;
     }
 
-    const string& getJailerPath()
+    string getJailerPath()
     {
-        static string JailerPath = "/usr/bin/jailer";
+        string JailerPath = "/usr/bin/jailer";
         JValueUtil::getValue(m_readOnlyDatabase, "JailerPath", JailerPath);
         return JailerPath;
     }
 
-    const string& getJailModePath()
+    string getJailModePath()
     {
-        static string JailModePath = "/var/luna/preferences/jailer_disabled";
+        string JailModePath = "/var/luna/preferences/jailer_disabled";
         JValueUtil::getValue(m_readOnlyDatabase, "JailModePath", JailModePath);
         return JailModePath;
     }
 
-    const string& getQmlRunnerPath()
+    string getQmlRunnerPath()
     {
-        static string QmlRunnerPath = "/usr/bin/qml-runner";
+        string QmlRunnerPath = "/usr/bin/qml-runner";
         JValueUtil::getValue(m_readOnlyDatabase, "QmlRunnerPath", QmlRunnerPath);
         return QmlRunnerPath;
     }
 
-    const string& getRespawnedPath()
+    string getRespawnedPath()
     {
-        static string RespawnedPath = "/tmp/sam-respawned";
+        string RespawnedPath = "/tmp/sam-respawned";
         JValueUtil::getValue(m_readOnlyDatabase, "RespawnedPath", RespawnedPath);
         return RespawnedPath;
     }
 
-    bool isFullscreenWindowTypes(string type)
+    bool isFullscreenWindowTypes(const string& type)
     {
         JValue FullscreenWindowType;
         if (!JValueUtil::getValue(m_readOnlyDatabase, "FullscreenWindowType", FullscreenWindowType) || !FullscreenWindowType.isArray()) {
             return false;
         }
-        int size = FullscreenWindowType.arraySize();
+        const int size = FullscreenWindowType.arraySize();
         for (int i = 0; i < size; ++i) {
             if (FullscreenWindowType[i].asString() == type) {
                 return true;
@@ -129,7 +129,7 @@ public:
             return false;
         }
 
-        int size = NoJailApps.arraySize();
+        const int size = NoJailApps.arraySize();
         for (int i = 0; i < size; ++i) {
             if (NoJailApps[i].asString() == appId) {
                 return true;
@@ -145,7 +145,7 @@ public:
         JValue keepAliveApps;
 
         if (JValueUtil::getValue(m_readOnlyDatabase, "keepAliveApps", keepAliveApps) && keepAliveApps.isArray()) {
-            int size = keepAliveApps.arraySize();
+            const int size = keepAliveApps.arraySize();
             for (int i = 0; i < size; ++i) {
                 if (keepAliveApps[i].asString() == appId) {
                     return true;
@@ -154,7 +154,7 @@ public:
         }
 
         if (!JValueUtil::getValue(m_readWriteDatabase, "keepAliveApps", keepAliveApps) && keepAliveApps.isArray()) {
-            int size = keepAliveApps.arraySize();
+            const int size = keepAliveApps.arraySize();
             for (int i = 0; i < size; ++i) {
                 if (keepAliveApps[i].asString() == appId) {
                     return true;
@@ -205,7 +205,7 @@ public:
             return false;
         }
 
-        int size = deletedSystemApps.arraySize();
+        const int size = deletedSystemApps.arraySize();
         for (int i = 0; i < size; ++i) {
             if (deletedSystemApps[i].asString() == appId) {
                 return true;
@@ -228,23 +228,23 @@ public:
         saveReadWriteConf();
     }
 
-    const string& getLanguage() const
+    string getLanguage() const
     {
-        static string language = "";
+        string language = "";
         JValueUtil::getValue(m_readWriteDatabase, "language", language);
         return language;
     }
 
-    const string& getScript() const
+    string getScript() const
     {
-        static string script = "";
+        string script = "";
         JValueUtil::getValue(m_readWriteDatabase, "script", script);
         return script;
     }
 
-    const string& getRegion() const
+    string getRegion() const
     {
-        static string region = "";
+        string region = "";
         JValueUtil::getValue(m_readWriteDatabase, "region", region);
         return region;
     }
@@ -266,7 +266,7 @@ public:
             return false;
         }
 
-        int size = blockedAppList.arraySize();
+        const int size = blockedAppList.arraySize();
         for (int i = 0; i < size; ++i) {
             if (blockedAppList[i].asString() == appId) {
                 return true;
@@ -290,13 +290,13 @@ public:
         return m_isJailerDisabled;
     }
 
-    bool isAppHandlingSupported()
+    static bool isAppHandlingSupported()
     {
         // TODO This should be moved in configuration file in the future.
         return true;
     }
 
-    bool isMultipleInstanceSupported()
+    static bool isMultipleInstanceSupported()
     {
         // TODO This should be moved in configuration file in the future.
         return true;
