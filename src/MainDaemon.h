@@ -27,13 +27,20 @@ class MainDaemon : public ISingleton<MainDaemon>,
                    public IClassName {
 friend class ISingleton<MainDaemon>;
 public:
-    virtual ~MainDaemon();
+    virtual ~MainDaemon() override;
 
     void initialize();
     void finalize();
 
     void start();
     void stop();
+
+    /**
+     * The loop start() runs. SignalHandler needs it so a terminating signal
+     * can quit the loop from a main-loop callback instead of from a signal
+     * handler.
+     */
+    GMainLoop* getMainLoop() { return m_mainLoop; }
 
 private:
     MainDaemon();

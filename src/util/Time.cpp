@@ -39,6 +39,6 @@ long long Time::getCurrentTime()
 
 string Time::generateUid()
 {
-    boost::uuids::uuid uid = boost::uuids::random_generator()();
+    const boost::uuids::uuid uid = boost::uuids::random_generator()();
     return string(boost::lexical_cast<string>(uid));
 }

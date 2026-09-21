@@ -46,9 +46,9 @@ bool MemoryManager::onRequireMemory(LSHandle* sh, LSMessage* message, void* cont
     JValue responsePayload = pbnjson::JDomParser::fromString(response.getPayload());
     Logger::logCallResponse(getInstance().getClassName(), __FUNCTION__, response, responsePayload);
 
-    LSMessageToken token = LSMessageGetResponseToken(message);
-    LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByToken(token);
+    const LSMessageToken token = LSMessageGetResponseToken(message);
+    const LunaTaskPtr lunaTask = LunaTaskList::getInstance().getByToken(token);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByToken(token);
     if (lunaTask == nullptr) {
         Logger::error(getInstance().getClassName(), __FUNCTION__, "Cannot find lunaTask");
         return false;
@@ -79,7 +79,7 @@ bool MemoryManager::onRequireMemory(LSHandle* sh, LSMessage* message, void* cont
 
 void MemoryManager::requireMemory(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
-    static string method = string("luna://") + getName() + string("/requireMemory");
+    static const string method = string("luna://") + getName() + string("/requireMemory");
     JValue requestPayload = pbnjson::Object();
 
     if (!isConnected()) {

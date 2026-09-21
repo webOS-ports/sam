@@ -55,7 +55,7 @@ bool File::writeFile(const string &path, const string& buffer)
     return true;
 }
 
-bool File::concatToFilename(const string originPath, string& returnPath, const string addingStr)
+bool File::concatToFilename(const string& originPath, string& returnPath, const string& addingStr)
 {
     if (originPath.empty() || addingStr.empty())
         return false;
@@ -63,17 +63,17 @@ bool File::concatToFilename(const string originPath, string& returnPath, const s
     returnPath = "";
 
     string dir_path, filename, name_only, ext;
-    size_t pos_dir = originPath.find_last_of("/");
+    size_t pos_dir = originPath.find_last_of('/');
 
     if (string::npos == pos_dir) {
-        filename = std::move(originPath);
+        filename = originPath;
     } else {
         pos_dir = pos_dir + 1;
         dir_path = originPath.substr(0, pos_dir);
         filename = originPath.substr(pos_dir);
     }
 
-    size_t pos_ext = filename.find_last_of(".");
+    const size_t pos_ext = filename.find_last_of('.');
 
     if (string::npos == pos_ext)
         return false;

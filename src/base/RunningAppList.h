@@ -31,7 +31,7 @@ class RunningAppList : public ISingleton<RunningAppList>,
                        public IClassName {
 friend class ISingleton<RunningAppList>;
 public:
-    virtual ~RunningAppList();
+    virtual ~RunningAppList() override;
 
     RunningAppPtr createByLunaTask(LunaTaskPtr lunaTask);
     RunningAppPtr createByJson(const JValue& json);

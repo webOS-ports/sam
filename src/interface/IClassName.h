@@ -21,8 +21,8 @@ using namespace std;
 
 class IClassName {
 public:
-    IClassName() : m_name("Unknown") {};
-    virtual ~IClassName() {};
+    IClassName() : m_name("Unknown") {}
+    virtual ~IClassName() {}
 
     string& getClassName()
     {

@@ -31,7 +31,7 @@ class Notification : public ISingleton<Notification>,
                      public AbsLunaClient {
 friend class ISingleton<Notification>;
 public:
-    virtual ~Notification();
+    virtual ~Notification() override;
 
     // APIs
     static bool onCreatePincodePrompt(LSHandle* sh, LSMessage* message, void* context);

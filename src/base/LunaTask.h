@@ -141,7 +141,7 @@ public:
         m_requestPayload.put("params", params.duplicate());
     }
 
-    void setErrCodeAndText(int errorCode, string errorText)
+    void setErrCodeAndText(int errorCode, const string& errorText)
     {
         m_errorCode = errorCode;
         m_errorText = errorText;

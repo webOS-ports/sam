@@ -35,7 +35,7 @@ class RuntimeInfo : public ISingleton<RuntimeInfo>,
                     public IClassName {
 friend class ISingleton<RuntimeInfo> ;
 public:
-    virtual ~RuntimeInfo();
+    virtual ~RuntimeInfo() override;
 
     void initialize();
 

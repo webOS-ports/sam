@@ -27,7 +27,7 @@ using namespace pbnjson;
 
 class ApplicationManagerCompat : public LS::Handle {
 public:
-    ApplicationManagerCompat(string name)
+    explicit ApplicationManagerCompat(const string& name)
         : LS::Handle(LS::registerService(name.c_str()))
     {
 

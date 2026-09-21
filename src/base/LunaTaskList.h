@@ -28,7 +28,7 @@ using namespace std;
 class LunaTaskList : public ISingleton<LunaTaskList> {
 friend class ISingleton<LunaTaskList>;
 public:
-    virtual ~LunaTaskList();
+    virtual ~LunaTaskList() override;
 
     LunaTaskPtr create();
 

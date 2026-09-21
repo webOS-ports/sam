@@ -294,7 +294,7 @@ JValue AppDescription::getJson(JValue& properties)
 // canonicalised, "/resources/en/../../icon.png" - is published as-is and
 // resolves nowhere. That is why com.palm.app.accounts had a working main and no
 // icon in the launcher.
-string AppDescription::anchorLocalePath(const string& relativeLocaleDir, const string& value)
+string AppDescription::anchorLocalePath(const string& folderPath, const string& relativeLocaleDir, const string& value)
 {
     auto relativise = [](const string& path) -> string {
         gchar* resolved = g_canonicalize_filename(path.c_str(), "/");
@@ -306,12 +306,12 @@ string AppDescription::anchorLocalePath(const string& relativeLocaleDir, const s
         return result;
     };
 
-    string localeRelative = relativise(relativeLocaleDir + value);
-    if (File::isFile(File::join(m_folderPath, localeRelative)))
+    const string localeRelative = relativise(relativeLocaleDir + value);
+    if (File::isFile(File::join(folderPath, localeRelative)))
         return localeRelative;
 
-    string rootRelative = relativise(value);
-    if (File::isFile(File::join(m_folderPath, rootRelative)))
+    const string rootRelative = relativise(value);
+    if (File::isFile(File::join(folderPath, rootRelative)))
         return rootRelative;
 
     // Neither is present. Keep the localization-relative form so a value naming
@@ -359,21 +359,21 @@ bool AppDescription::loadAppinfo()
 
     // apply localization (overwrite from low to high)
     for (const auto& localizationDir : localizationDirs) {
-        string AbsoluteLocaleAppinfoPath = localizationDir + "appinfo.json";
-        string RelativeLocaleAppinfoPath = localizationDir.substr(m_folderPath.length());
+        const string AbsoluteLocaleAppinfoPath = localizationDir + "appinfo.json";
+        const string RelativeLocaleAppinfoPath = localizationDir.substr(m_folderPath.length());
 
         if (!File::isFile(AbsoluteLocaleAppinfoPath)) {
             continue;
         }
 
-        JValue localeAppinfo = JDomParser::fromFile(AbsoluteLocaleAppinfoPath.c_str());
+        const JValue localeAppinfo = JDomParser::fromFile(AbsoluteLocaleAppinfoPath.c_str());
         if (localeAppinfo.isNull()) {
             Logger::info(CLASS_NAME, __FUNCTION__, "IGNORRED", Logger::format("failed_to_load_localication: %s", localizationDir.c_str()));
             continue;
         }
 
         for (auto item : localeAppinfo.children()) {
-            string key = item.first.asString();
+            const string key = item.first.asString();
 
             if (!m_appinfo.hasKey(key) || m_appinfo[key].getType() != localeAppinfo[key].getType()) {
                 Logger::warning(CLASS_NAME, __FUNCTION__, m_appId, AbsoluteLocaleAppinfoPath, "localization is unmatchted with root");
@@ -403,7 +403,7 @@ bool AppDescription::loadAppinfo()
 
             if (find(PROPS_IMAGES.begin(), PROPS_IMAGES.end(), key) != PROPS_IMAGES.end() ||
                 find(PROPS_PATHS.begin(), PROPS_PATHS.end(), key) != PROPS_PATHS.end()) {
-                m_appinfo.put(key, anchorLocalePath(RelativeLocaleAppinfoPath,
+                m_appinfo.put(key, anchorLocalePath(m_folderPath, RelativeLocaleAppinfoPath,
                                                     localeAppinfo[key].asString()));
             } else {
                 m_appinfo.put(key, localeAppinfo[key]);
@@ -433,9 +433,18 @@ bool AppDescription::readAppinfo()
     JValueUtil::getValue(m_appinfo, "version", version);
     vector<string> versionInfo;
     boost::split(versionInfo, version, boost::is_any_of("."));
-    uint16_t major_ver = versionInfo.size() > 0 ? (uint16_t) stoi(versionInfo[0]) : 0;
-    uint16_t minor_ver = versionInfo.size() > 1 ? (uint16_t) stoi(versionInfo[1]) : 0;
-    uint16_t micro_ver = versionInfo.size() > 2 ? (uint16_t) stoi(versionInfo[2]) : 0;
+    // version comes from a third-party appinfo.json, so a component may be
+    // anything at all. stoi threw std::invalid_argument out of the whole scan;
+    // treat an unparseable component as 0 the way a missing one already was.
+    auto versionPart = [&versionInfo](size_t index) -> uint16_t {
+        uint16_t part = 0;
+        if (index < versionInfo.size())
+            boost::conversion::try_lexical_convert(versionInfo[index], part);
+        return part;
+    };
+    const uint16_t major_ver = versionPart(0);
+    const uint16_t minor_ver = versionPart(1);
+    const uint16_t micro_ver = versionPart(2);
     m_intVersion = { major_ver, minor_ver, micro_ver };
 
     // app_type
@@ -466,7 +475,6 @@ bool AppDescription::readAsset()
 
     for (const auto& key : ASSETS_SUPPORTED) {
         string value;
-        string variant_path;
 
         if (!JValueUtil::getValue(m_appinfo, key, value) || value.empty()) {
             continue;
@@ -477,12 +485,12 @@ bool AppDescription::readAsset()
             continue;
         }
 
-        string filename = value.substr(1);
+        const string filename = value.substr(1);
         bool foundAsset = false;
 
-        JValue fallbacks = SAMConf::getInstance().getSysAssetFallbackPrecedence();
+        const JValue fallbacks = SAMConf::getInstance().getSysAssetFallbackPrecedence();
         for (int i = 0; i < fallbacks.arraySize(); i++) {
-            string assetPath = File::join(File::join(sysAssetsBasePath, fallbacks[i].asString()), filename);
+            const string assetPath = File::join(File::join(sysAssetsBasePath, fallbacks[i].asString()), filename);
             string pathToCheck = "";
 
             // set asset without variant
@@ -500,7 +508,7 @@ bool AppDescription::readAsset()
             continue;
         }
 
-        string defaultAsset = File::join(sysAssetsBasePath, filename);
+        const string defaultAsset = File::join(sysAssetsBasePath, filename);
         m_appinfo.put(key, defaultAsset);
     }
     return true;

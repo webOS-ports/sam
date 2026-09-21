@@ -38,12 +38,12 @@ void Configd::onInitialzed()
 
 void Configd::onFinalized()
 {
-    m_getConfigsCall.cancel();
+    releaseCall(m_getConfigsCall);
 }
 
 void Configd::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getConfigs");
+    static const string method = string("luna://") + getName() + string("/getConfigs");
 
     if (isConnected) {
         JValue requestPayload = pbnjson::Object();

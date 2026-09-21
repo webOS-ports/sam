@@ -57,15 +57,31 @@ public:
     template<typename ... Args>
     static const string format(const string& format, Args ... args)
     {
-        static char buffer[1024];
-        snprintf(buffer, 1024, format.c_str(), args ... );
-        return string(buffer);
+        // The buffer used to be static, which raced between the glib main loop
+        // thread and the luna-service threads and silently truncated at 1024.
+        // Measure first, then format into a string sized to fit.
+#pragma GCC diagnostic push
+// Every caller passes a literal, but the format only becomes one here, so the
+// compiler cannot see through the pack to check it. -Wformat-security matters
+// too: without it a zero-argument format() is a hard error under the recipe's
+// -Werror=format-security.
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
+        const int needed = snprintf(nullptr, 0, format.c_str(), args ...);
+        if (needed < 0)
+            return string();
+
+        string buffer(static_cast<size_t>(needed) + 1, '\0');
+        snprintf(&buffer[0], buffer.size(), format.c_str(), args ...);
+#pragma GCC diagnostic pop
+        buffer.resize(static_cast<size_t>(needed));
+        return buffer;
     }
 
     static const char* toString(bool BOOL)
     {
-        static const char* TStr = "true";
-        static const char* FStr = "false";
+        const char* const TStr = "true";
+        const char* const FStr = "false";
 
         if (BOOL)
             return TStr;
@@ -119,8 +135,8 @@ private:
     Logger();
 
     void write(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
-    void writeConsole(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
-    void writePmlog(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
+    static void writeConsole(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
+    static void writePmlog(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail);
 
     enum LogLevel m_level;
     enum LogType m_type;

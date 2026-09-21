@@ -24,8 +24,8 @@ class AbsLifeHandler {
 public:
     static AbsLifeHandler& getLifeHandler(RunningAppPtr runningApp);
 
-    AbsLifeHandler() {};
-    virtual ~AbsLifeHandler() {};
+    AbsLifeHandler() {}
+    virtual ~AbsLifeHandler() {}
 
     virtual void launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask) = 0;
     virtual void pause(RunningAppPtr runningApp, LunaTaskPtr lunaTask) = 0;

@@ -47,9 +47,9 @@ LaunchPoint::LaunchPoint(AppDescriptionPtr appDesc, const string& launchPointId)
     : m_type(LaunchPointType::LaunchPoint_UNKNOWN),
       m_appDesc(std::move(appDesc)),
       m_launchPointId(launchPointId),
-      m_isDirty(false)
+      m_isDirty(false),
+      m_database(pbnjson::Object())
 {
-    m_database = pbnjson::Object();
 }
 
 LaunchPoint::~LaunchPoint()
@@ -68,7 +68,7 @@ void LaunchPoint::syncDatabase()
     json.put("type", toString(getType()));
     json.put("launchPointId", m_launchPointId);
 
-    bool isOld = (json.hasKey("_id") && json.hasKey("_rev") && json.hasKey("_kind"));
+    const bool isOld = (json.hasKey("_id") && json.hasKey("_rev") && json.hasKey("_kind"));
 
     if (isOld) {
         if (DB8::getInstance().updateLaunchPoint(json)) {
@@ -89,8 +89,8 @@ void LaunchPoint::setDatabase(const JValue& database)
 
 void LaunchPoint::updateDatabase(const JValue& json)
 {
-    for (JValue::KeyValue obj : json.children()) {
-        string key = obj.first.asString();
+    for (const JValue::KeyValue obj : json.children()) {
+        const string key = obj.first.asString();
 
         if (!m_database.hasKey(key)) {
             m_database.put(key, obj.second);
@@ -108,8 +108,8 @@ void LaunchPoint::updateDatabase(const JValue& json)
 void LaunchPoint::toJson(JValue& json) const
 {
     m_appDesc->toJson(json);
-    for (JValue::KeyValue obj : m_database.children()) {
-        string key = obj.first.asString();
+    for (const JValue::KeyValue obj : m_database.children()) {
+        const string key = obj.first.asString();
 
         if (key == "_id" || key == "_rev" || key == "_kind")
             continue;

@@ -36,7 +36,7 @@ class WAM : public ISingleton<WAM>,
             public AbsLifeHandler {
 friend class ISingleton<WAM>;
 public:
-    virtual ~WAM();
+    virtual ~WAM() override;
 
     // AbsLifeHandler
     void launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask) override;

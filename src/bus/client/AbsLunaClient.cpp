@@ -40,8 +40,8 @@ bool AbsLunaClient::_onServerStatus(LSHandle* sh, LSMessage* message, void* cont
 {
     AbsLunaClient* client = static_cast<AbsLunaClient*>(context);
 
-    Message response(message);
-    JValue subscriptionPayload = JDomParser::fromString(response.getPayload());
+    const Message response(message);
+    const JValue subscriptionPayload = JDomParser::fromString(response.getPayload());
 
     if (subscriptionPayload.isNull())
         return true;
@@ -91,6 +91,12 @@ void AbsLunaClient::initialize()
 
 void AbsLunaClient::finalize()
 {
-    m_statusCall.cancel();
+    releaseCall(m_statusCall);
     onFinalized();
+}
+
+void AbsLunaClient::releaseCall(Call& call)
+{
+    call.cancel();
+    call = Call();
 }

@@ -246,7 +246,7 @@ void RunningApp::setLifeStatus(LifeStatus lifeStatus)
     // See more info here PLAT-101882.
     if (isTransition(m_lifeStatus)) {
         if (m_lifeStatus == LifeStatus::LifeStatus_LAUNCHING || m_lifeStatus == LifeStatus::LifeStatus_RELAUNCHING) {
-            // Donot start killing timer in case of (re)launching
+            // Do not start the killing timer while (re)launching
         } else if (m_lifeStatus == LifeStatus::LifeStatus_CLOSING) {
             // App should be closed within 1 second
             startKillingTimer(TIMEOUT_CLOSE);
@@ -263,11 +263,11 @@ void RunningApp::setLifeStatus(LifeStatus lifeStatus)
 
 gboolean RunningApp::onKillingTimer(gpointer context)
 {
-    RunningApp* self = static_cast<RunningApp*>(context);
+    RunningApp const* self = static_cast<RunningApp*>(context);
     if (self == nullptr) {
         return G_SOURCE_REMOVE;
     }
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(self->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(self->getInstanceId());
     if (runningApp == nullptr) {
         return G_SOURCE_REMOVE;
     }

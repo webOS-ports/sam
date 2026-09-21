@@ -16,6 +16,10 @@
 
 #include "LSM.h"
 
+#include <algorithm>
+
+#include <boost/lexical_cast.hpp>
+
 #include "base/AppDescription.h"
 #include "base/LaunchPointList.h"
 #include "base/LaunchPoint.h"
@@ -61,12 +65,12 @@ void LSM::onInitialzed()
 
 void LSM::onFinalized()
 {
-    m_getForegroundAppInfoCall.cancel();
+    releaseCall(m_getForegroundAppInfoCall);
 }
 
 void LSM::onServerStatusChanged(bool isConnected)
 {
-    static string method = string("luna://") + getName() + string("/getForegroundAppInfo");
+    static const string method = string("luna://") + getName() + string("/getForegroundAppInfo");
 
     if (isConnected) {
         m_getForegroundAppInfoCall = ApplicationManager::getInstance().callMultiReply(
@@ -109,7 +113,7 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
         JValueUtil::getValue(orgForegroundAppInfo[i], "displayId", displayId);
         JValueUtil::getValue(orgForegroundAppInfo[i], "processId", processId);
 
-        RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId, displayId);
+        const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(appId, displayId);
         if (runningApp == nullptr) {
             Logger::info(getInstance().getClassName(), __FUNCTION__, "Cannot find RunningApp. Respawned or Skipped for other sessions");
             continue;
@@ -129,7 +133,14 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
         // SAM knows its child pid better than LSM.
         // This code is needed specially in container environment.
         if (runningApp->getLaunchPoint()->getAppDesc()->getAppType() == AppType::AppType_Web) {
-            runningApp->setProcessId(atoi(processId.c_str()));
+            // processId arrives as a string over the bus. atoi turned anything
+            // non-numeric into pid 0 without a word; keep the old pid instead.
+            int pid = 0;
+            if (boost::conversion::try_lexical_convert(processId, pid) && pid > 0)
+                runningApp->setProcessId((pid_t) pid);
+            else
+                Logger::warning(getInstance().getClassName(), __FUNCTION__, runningApp->getAppId(),
+                                Logger::format("Ignoring malformed processId '%s'", processId.c_str()));
         }
         runningApp->setLifeStatus(LifeStatus::LifeStatus_FOREGROUND);
         if (runningApp->isFirstLaunch())
@@ -139,17 +150,12 @@ bool LSM::onGetForegroundAppInfo(LSHandle* sh, LSMessage* message, void* context
     }
 
     // set background
-    for (auto& oldAppId : getInstance().m_foregroundAppIds) {
-        bool found = false;
-        for (auto& newAppId : newForegroundAppIds) {
-            if (oldAppId == newAppId) {
-                found = true;
-                break;
-            }
-        }
+    for (const auto& oldAppId : getInstance().m_foregroundAppIds) {
+        const bool found = std::find(newForegroundAppIds.begin(), newForegroundAppIds.end(), oldAppId)
+                           != newForegroundAppIds.end();
 
         if (found == false) {
-            RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(oldAppId);
+            const RunningAppPtr runningApp = RunningAppList::getInstance().getByAppId(oldAppId);
             if (runningApp && runningApp->getLifeStatus() == LifeStatus::LifeStatus_FOREGROUND) {
                 runningApp->setLifeStatus(LifeStatus::LifeStatus_BACKGROUND);
             }

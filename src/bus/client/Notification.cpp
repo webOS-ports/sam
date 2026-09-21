@@ -46,7 +46,7 @@ void Notification::onServerStatusChanged(bool isConnected)
 
 bool Notification::onCreatePincodePrompt(LSHandle* sh, LSMessage* message, void* context)
 {
-    JValue responsePayload = pbnjson::JDomParser::fromString(LSMessageGetPayload(message));
+    const JValue responsePayload = pbnjson::JDomParser::fromString(LSMessageGetPayload(message));
     bool returnValue = false;
     bool matched = false;
 
@@ -67,7 +67,7 @@ bool Notification::onCreatePincodePrompt(LSHandle* sh, LSMessage* message, void*
 
 Call Notification::createPincodePrompt(LSFilterFunc func)
 {
-    static string method = string("luna://") + getName() + string("/createPincodePrompt");
+    static const string method = string("luna://") + getName() + string("/createPincodePrompt");
 
     JValue requestPayload = pbnjson::Object();
     requestPayload.put("promptType", "parental");

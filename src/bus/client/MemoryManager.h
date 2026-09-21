@@ -33,7 +33,7 @@ class MemoryManager : public ISingleton<MemoryManager>,
                       public AbsLunaClient  {
 friend class ISingleton<MemoryManager>;
 public:
-    virtual ~MemoryManager();
+    virtual ~MemoryManager() override;
 
     void requireMemory(RunningAppPtr runningApp, LunaTaskPtr lunaTask);
 

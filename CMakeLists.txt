@@ -78,14 +78,20 @@ endif()
 # Require that all undefined symbols are satisfied by the libraries from target_link_libraries()
 webos_add_linker_options(ALL --no-undefined)
 
-# Build the sam executable
+# Everything except the entry point goes into a static library so that the unit
+# tests in tests/ can link the same objects the daemon is built from.
 file(GLOB_RECURSE SOURCES src/*.cpp)
+list(REMOVE_ITEM SOURCES ${PROJECT_SOURCE_DIR}/src/Main.cpp)
 
 webos_configure_source_files(cfg ${PROJECT_SOURCE_DIR}/src/Environment.h)
 
 include_directories(src)
 include_directories(${PROJECT_BINARY_DIR}/Configured/src)
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
+
+add_library(${CMAKE_PROJECT_NAME}-core STATIC ${SOURCES})
+set_target_properties(${CMAKE_PROJECT_NAME}-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+add_executable(${CMAKE_PROJECT_NAME} src/Main.cpp)
 
 set(LIBS
     ${GLIB2_LDFLAGS}
@@ -99,7 +105,8 @@ set(LIBS
     ${ICU}
     ${RT}
 )
-target_link_libraries(${CMAKE_PROJECT_NAME} ${LIBS})
+target_link_libraries(${CMAKE_PROJECT_NAME}-core ${LIBS})
+target_link_libraries(${CMAKE_PROJECT_NAME} ${CMAKE_PROJECT_NAME}-core ${LIBS})
 
 webos_build_system_bus_files()
 
@@ -114,3 +121,8 @@ file(GLOB_RECURSE SAM_CONF_FILES ${CMAKE_CURRENT_BINARY_DIR}/files/conf/*)
 install(FILES ${SAM_CONF_FILES} DESTINATION ${WEBOS_INSTALL_WEBOS_SYSCONFDIR})
 
 webos_config_build_doxygen(doc Doxyfile)
+
+# Unit tests. Off unless -DWEBOS_CONFIG_BUILD_TESTS=TRUE (or INSTALL_TESTS),
+# so an ordinary build is unaffected.
+webos_test_provider()
+add_subdirectory(tests)

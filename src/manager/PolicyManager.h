@@ -34,7 +34,7 @@ class PolicyManager : public ISingleton<PolicyManager>,
                       public IClassName {
 friend class ISingleton<PolicyManager> ;
 public:
-    virtual ~PolicyManager();
+    virtual ~PolicyManager() override;
 
     void launch(LunaTaskPtr lunaTask);
     void pause(LunaTaskPtr lunaTask);

@@ -33,7 +33,7 @@ class Bootd : public ISingleton<Bootd>,
               public AbsLunaClient {
 friend class ISingleton<Bootd>;
 public:
-    virtual ~Bootd();
+    virtual ~Bootd() override;
 
     boost::signals2::signal<void(const JValue&)> EventGetBootStatus;
 

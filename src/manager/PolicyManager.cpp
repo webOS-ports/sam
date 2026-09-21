@@ -31,7 +31,7 @@ void PolicyManager::launch(LunaTaskPtr lunaTask)
 {
     pre(lunaTask);
 
-    string instanceId = RunningApp::generateInstanceId(lunaTask->getDisplayId());
+    const string instanceId = RunningApp::generateInstanceId(lunaTask->getDisplayId());
     lunaTask->setInstanceId(instanceId);
     RunningAppPtr runningApp = RunningAppList::getInstance().createByLunaTask(lunaTask);
     if (runningApp == nullptr) {
@@ -55,7 +55,7 @@ void PolicyManager::pause(LunaTaskPtr lunaTask)
 {
     pre(lunaTask);
 
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_CLOSE, lunaTask->getId() + " is not running");
         lunaTask->error(lunaTask);
@@ -79,7 +79,7 @@ void PolicyManager::close(LunaTaskPtr lunaTask)
 {
     pre(lunaTask);
 
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_CLOSE, lunaTask->getId() + " is not running");
         lunaTask->error(lunaTask);
@@ -106,7 +106,7 @@ void PolicyManager::relaunch(LunaTaskPtr lunaTask)
 {
     pre(lunaTask);
 
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_PAUSE, lunaTask->getId() + " is not running");
         lunaTask->error(lunaTask);
@@ -134,7 +134,7 @@ void PolicyManager::relaunch(LunaTaskPtr lunaTask)
 void PolicyManager::removeLaunchPoint(LunaTaskPtr lunaTask)
 {
     pre(lunaTask);
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask);
     if (runningApp) {
         LaunchPointPtr launchPoint = nullptr;
         switch (runningApp->getLaunchPoint()->getType()) {
@@ -211,7 +211,7 @@ void PolicyManager::pre(LunaTaskPtr lunaTask)
 void PolicyManager::onRequireMemory(LunaTaskPtr lunaTask)
 {
     lunaTask->setSuccessCallback(boost::bind(&PolicyManager::onReplyWithIds, this, boost::placeholders::_1));
-    RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
+    const RunningAppPtr runningApp = RunningAppList::getInstance().getByInstanceId(lunaTask->getInstanceId());
     if (runningApp == nullptr) {
         lunaTask->setErrCodeAndText(ErrCode_PAUSE, lunaTask->getId() + " is not running");
         lunaTask->error(lunaTask);

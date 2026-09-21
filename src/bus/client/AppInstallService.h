@@ -33,7 +33,7 @@ class AppInstallService : public ISingleton<AppInstallService>,
                           public AbsLunaClient {
 friend class ISingleton<AppInstallService>;
 public:
-    virtual ~AppInstallService();
+    virtual ~AppInstallService() override;
 
     static bool onRemove(LSHandle* sh, LSMessage *message, void* context);
     Call remove(const string& appId);

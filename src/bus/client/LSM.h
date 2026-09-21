@@ -32,7 +32,7 @@ class LSM : public ISingleton<LSM>,
             public AbsLunaClient {
 friend class ISingleton<LSM>;
 public:
-    virtual ~LSM();
+    virtual ~LSM() override;
 
     boost::signals2::signal<void(const JValue&)> EventRecentsAppListChanged;
 

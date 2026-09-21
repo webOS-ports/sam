@@ -33,7 +33,7 @@ friend class ISingleton<AppDescriptionList>;
 public:
     static bool compare(AppDescriptionPtr me, AppDescriptionPtr another);
 
-    virtual ~AppDescriptionList();
+    virtual ~AppDescriptionList() override;
 
     void changeLocale();
 
