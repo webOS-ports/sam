@@ -14,6 +14,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include <cstdlib>
 #include "base/RunningAppList.h"
 
 #include "bus/service/ApplicationManager.h"
@@ -176,17 +177,46 @@ RunningAppPtr RunningAppList::getByInstanceId(const string& instanceId)
     return m_map[instanceId];
 }
 
+namespace {
+
+// WAM gives a page created by window.open() a purely numeric instance id
+// counting up from 1000, while everything sam launches gets a UUID. Such a page
+// carries its parent's app id but is not separately launchable: it has no
+// window of its own, so a relaunch aimed at it reaches WebAppWayland::Raise()
+// and is then dropped by WebAppWindowImpl::SetWindowHostState(), which does
+// nothing without a window. The app can never be brought forward.
+//
+// strtoll() rather than stoi(): it cannot throw on a UUID, and requiring the
+// whole string to be consumed rejects a UUID that merely starts with digits.
+bool isWindowOpenInstanceId(const string& instanceId)
+{
+    if (instanceId.empty())
+        return false;
+    char* end = nullptr;
+    const long long numericId = strtoll(instanceId.c_str(), &end, 10);
+    return end && *end == '\0' && numericId >= 1000;
+}
+
+}
+
 RunningAppPtr RunningAppList::getByAppId(const string& appId, const int displayId)
 {
+    RunningAppPtr fallback = nullptr;
     for (auto it = m_map.begin(); it != m_map.end(); ++it) {
-        if ((*it).second->getAppId() == appId) {
-            if (displayId == -1)
-                return it->second;
-            if ((*it).second->getDisplayId() == displayId)
-                return it->second;
+        if ((*it).second->getAppId() != appId)
+            continue;
+        if (displayId != -1 && (*it).second->getDisplayId() != displayId)
+            continue;
+        // Prefer a real instance; m_map is keyed by instance id, so "1001"
+        // sorts before a UUID and would otherwise always win.
+        if (isWindowOpenInstanceId((*it).second->getInstanceId())) {
+            if (!fallback)
+                fallback = it->second;
+            continue;
         }
+        return it->second;
     }
-    return nullptr;
+    return fallback;
 }
 
 RunningAppPtr RunningAppList::getByToken(const LSMessageToken& token)
