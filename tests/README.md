@@ -78,6 +78,7 @@ regression shows up as a failing test rather than as a field report:
 | `SAMConfLocaleTest` | `setLocale()` round-trip, persistence, reload, and that a locale removed from the config reads back as `""` rather than as the previous value. |
 | `LocalizedAppinfoTest` | Which `resources/<language>[/<script>][/<region>]` overlays a scan applies, and that a legacy relative `main` is re-anchored exactly once. |
 | `SignalHandlerTest` | That signals arrive as main-loop events and not through a handler: no `sigaction` handler installed, the handled set blocked, `SIGPIPE` left at `SIG_IGN`, and a raised `SIGTERM` read back off the signalfd instead of killing the process. |
+| `LunaTaskTest` | `hasErrorCallback()` reports the error callback, not the success one. It tested the wrong member, so `PolicyManager::pre()` never set a default error callback and a failed close was never answered. |
 
 Verified by mutation: reintroducing each original defect makes the
 corresponding test fail. For `SignalHandlerTest` that was done two ways -
