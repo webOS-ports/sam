@@ -207,7 +207,7 @@ public:
     }
     bool hasErrorCallback()
     {
-        return !m_successCallback.empty();
+        return !m_errorCallback.empty();
     }
     void error(LunaTaskPtr lunaTask)
     {
