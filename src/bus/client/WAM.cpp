@@ -20,6 +20,9 @@
 #include "base/LunaTaskList.h"
 #include "base/RunningAppList.h"
 
+// kErrCodeNoRunningApp in WAM (web_app_manager_service.h): killApp for an app it has no record of
+static const int WAM_ERR_NO_RUNNING_APP = 2000;
+
 bool WAM::onListRunningApps(LSHandle* sh, LSMessage* message, void* context)
 {
     Message response(message);
@@ -354,9 +357,18 @@ bool WAM::onKillApp(LSHandle* sh, LSMessage* message, void* context)
 
     string procId = "";
     bool returnValue = true;
+    int errorCode = 0;
 
     JValueUtil::getValue(responsePayload, "processId", procId);
     JValueUtil::getValue(responsePayload, "returnValue", returnValue);
+    JValueUtil::getValue(responsePayload, "errorCode", errorCode);
+
+    // WAM has no such app: it was already closed from its card or went away
+    // with a WAM restart. The goal of killApp is met, so close it here too.
+    if (!returnValue && errorCode == WAM_ERR_NO_RUNNING_APP) {
+        Logger::info(getInstance().getClassName(), __FUNCTION__, "WAM reports the app is not running. Treating it as closed");
+        returnValue = true;
+    }
 
     if (!returnValue && lunaTask) {
         Logger::warning(getInstance().getClassName(), __FUNCTION__, "Failed to kill app. WAM might be restarted");
