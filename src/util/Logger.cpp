@@ -223,6 +223,17 @@ void Logger::writeConsole(const enum LogLevel& level, const string& className, c
     }
 }
 
+string Logger::debugText(const string& className, const string& functionName, const string& who, const string& what, const string& detail)
+{
+    string text = "[" + className + "][" + functionName + "]";
+    if (!who.empty())
+        text += "[" + who + "]";
+    text += " " + what;
+    if (!detail.empty())
+        text += "\n" + detail;
+    return text;
+}
+
 void Logger::writePmlog(const enum LogLevel& level, const string& className, const string& functionName, const string& who, const string& what, const string& detail)
 {
     static PmLogContext context = nullptr;
@@ -233,7 +244,11 @@ void Logger::writePmlog(const enum LogLevel& level, const string& className, con
     // TODO handle empty who
     switch(level) {
     case LogLevel_DEBUG:
-        PmLogDebug(context, detail.c_str());
+        // PmLogDebug takes a format, not a message: the text goes in as an
+        // argument, so a '%' in a path or payload is printed, not parsed.
+        // It used to pass detail alone, which most debug calls leave empty,
+        // so they logged an empty line.
+        PmLogDebug(context, "%s", debugText(className, functionName, who, what, detail).c_str());
         break;
 
     case LogLevel_INFO:

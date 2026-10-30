@@ -82,3 +82,24 @@ TEST_F(LoggerFormatTest, ToStringIsStable)
     EXPECT_STREQ("true", t);
     EXPECT_STREQ("false", f);
 }
+
+// writePmlog() logs a debug message through debugText(). It used to log the
+// detail alone - empty for nearly every Logger::debug() call - and as the
+// format string, so a '%' in it was parsed.
+TEST(LoggerDebugTextTest, CarriesEveryPartOfTheMessage)
+{
+    EXPECT_EQ("[AppDescription][scan][com.example] folderPath(/x)\ndetail",
+              Logger::debugText("AppDescription", "scan", "com.example", "folderPath(/x)", "detail"));
+}
+
+TEST(LoggerDebugTextTest, LeavesOutAnEmptyWhoAndDetail)
+{
+    EXPECT_EQ("[SettingService][onCheck] result fail: {}",
+              Logger::debugText("SettingService", "onCheck", "", "result fail: {}", ""));
+}
+
+TEST(LoggerDebugTextTest, KeepsPercentSignsAsText)
+{
+    EXPECT_EQ("[C][f][app%s] 50%d\n%n%%",
+              Logger::debugText("C", "f", "app%s", "50%d", "%n%%"));
+}

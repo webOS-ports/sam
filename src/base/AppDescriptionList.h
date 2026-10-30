@@ -37,6 +37,14 @@ public:
 
     void changeLocale();
 
+    // An id scanApp() accepts: one path component, so joining it onto an
+    // application path cannot leave that path.
+    static bool isScannableAppId(const string& appId);
+    // The description scanApp() would add for appId, or nullptr if appId has
+    // no readable folder under any of applicationPaths. Like scanApp(), the
+    // last path that has the app wins.
+    static AppDescriptionPtr findApp(const string& appId, const JValue& applicationPaths);
+
     void scanApp(const string& appId);
     void scanFull();
     void scanDir(const string& path, const AppLocation& appLocation);

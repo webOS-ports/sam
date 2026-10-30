@@ -69,15 +69,20 @@ void AppDescriptionList::changeLocale()
     }
 }
 
-void AppDescriptionList::scanApp(const string& appId)
+bool AppDescriptionList::isScannableAppId(const string& appId)
 {
-    AppDescriptionPtr newAppDesc = AppDescriptionList::getInstance().create(appId);
-    if (newAppDesc == nullptr) {
-        Logger::warning(getInstance().getClassName(), __FUNCTION__, appId, "Failed to create new AppDescription");
-        return;
+    return !appId.empty() && appId[0] != '.' &&
+           appId.find('/') == string::npos && appId.find('\0') == string::npos;
+}
+
+AppDescriptionPtr AppDescriptionList::findApp(const string& appId, const JValue& applicationPaths)
+{
+    if (!isScannableAppId(appId)) {
+        Logger::warning(getInstance().getClassName(), __FUNCTION__, appId, "Not a scannable appId");
+        return nullptr;
     }
 
-    const JValue applicationPaths = SAMConf::getInstance().getApplicationPaths();
+    AppDescriptionPtr newAppDesc = make_shared<AppDescription>(appId);
     for (int i = applicationPaths.arraySize() - 1; i >= 0; i--) {
         string path = "";
         string typeByDir = "";
@@ -97,7 +102,7 @@ void AppDescriptionList::scanApp(const string& appId)
 
         const string folderPath = File::join(path, appId);
         if (!File::isDirectory(folderPath)) {
-            Logger::warning(getClassName(), __FUNCTION__, appId, folderPath + " is not exist");
+            Logger::warning(getInstance().getClassName(), __FUNCTION__, appId, folderPath + " is not exist");
             continue;
         }
 
@@ -106,7 +111,20 @@ void AppDescriptionList::scanApp(const string& appId)
         }
     }
 
-    if (!newAppDesc->isScanned()) {
+    if (!newAppDesc->isScanned())
+        return nullptr;
+    return newAppDesc;
+}
+
+void AppDescriptionList::scanApp(const string& appId)
+{
+    if (!isScannableAppId(appId)) {
+        Logger::warning(getClassName(), __FUNCTION__, appId, "Not a scannable appId");
+        return;
+    }
+
+    AppDescriptionPtr newAppDesc = findApp(appId, SAMConf::getInstance().getApplicationPaths());
+    if (!newAppDesc) {
         Logger::warning(getClassName(), __FUNCTION__, appId, "Failed to scan AppDescription");
         AppDescriptionList::getInstance().removeByAppId(appId);
         return;

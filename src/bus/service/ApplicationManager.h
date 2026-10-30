@@ -61,6 +61,7 @@ public:
     static const char* METHOD_LOCK_APP;
     static const char* METHOD_REGISTER_APP;
     static const char* METHOD_REGISTER_NATIVE_APP;
+    static const char* METHOD_SCAN_APP;
 
     static const char* METHOD_LIST_APPS;
     static const char* METHOD_GET_APP_STATUS;
@@ -89,6 +90,7 @@ public:
     void getForegroundAppInfo(LunaTaskPtr lunaTask);
     void lockApp(LunaTaskPtr lunaTask);
     void registerApp(LunaTaskPtr lunaTask);
+    void scanApp(LunaTaskPtr lunaTask);
 
     void listApps(LunaTaskPtr lunaTask);
     void getAppStatus(LunaTaskPtr lunaTask);
