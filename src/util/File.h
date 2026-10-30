@@ -30,7 +30,29 @@ class File {
 public:
     static void set_slash_to_base_path(string& path);
     static string readFile(const string& file_name);
+
+    // Replace filePath with buffer, for the files SAM keeps its own state in.
+    // SAM runs as root, so this never follows a symlink: the new contents go to
+    // a temporary file next to filePath (opened O_EXCL | O_NOFOLLOW), are
+    // fsync()ed, and renamed over filePath, so a reader or a crash sees either
+    // the old file or the new one, never a truncated one. A file that is already
+    // there keeps its permission bits, without group or other write; a new one
+    // is created 0644 (less the umask).
+    //
+    // Fails, with errno set, if filePath is a symlink (ELOOP), is not a regular
+    // file (EINVAL), or cannot be written; filePath is then left untouched.
+    // Assumes one writer per path: a leftover temporary file from an earlier
+    // crash is removed.
     static bool writeFile(const string& filePath, const string& buffer);
+
+    // Read a file SAM itself keeps state in. Fails, with errno set, if path is a
+    // symlink (ELOOP), not a regular file (EINVAL), or not owned by SAM's
+    // effective uid or writable by group or others (EPERM): such a file was not
+    // written by writeFile() and its contents are not trusted.
+    static bool readStateFile(const string& path, string& contents);
+
+    // The temporary file writeFile() uses for filePath (".<name>.tmp").
+    static string tempPathFor(const string& filePath);
     static bool concatToFilename(const string& originPath, string& returnPath, const string& addingStr);
 
     static bool isDirectory(const string& path);

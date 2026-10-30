@@ -16,10 +16,56 @@
 
 #include "File.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <glib.h>
+
+namespace {
+
+// Splits filePath into the directory to open and the name inside it.
+bool splitPath(const string& filePath, string& dir, string& name)
+{
+    const size_t slash = filePath.find_last_of('/');
+    if (slash == string::npos) {
+        dir = ".";
+        name = filePath;
+    } else {
+        dir = (slash == 0) ? "/" : filePath.substr(0, slash);
+        name = filePath.substr(slash + 1);
+    }
+    return !name.empty() && name != "." && name != "..";
+}
+
+bool writeAll(int fd, const string& buffer)
+{
+    const char* data = buffer.data();
+    size_t left = buffer.size();
+
+    while (left > 0) {
+        const ssize_t written = ::write(fd, data, left);
+        if (written < 0) {
+            if (errno == EINTR)
+                continue;
+            return false;
+        }
+        data += written;
+        left -= static_cast<size_t>(written);
+    }
+    return true;
+}
+
+// close() that keeps the errno of an earlier failure.
+void closeKeepingErrno(int fd)
+{
+    const int saved = errno;
+    close(fd);
+    errno = saved;
+}
+
+}  // namespace
 
 void File::set_slash_to_base_path(string& path)
 {
@@ -43,15 +89,125 @@ string File::readFile(const string& file_name)
     return file_contents;
 }
 
-bool File::writeFile(const string &path, const string& buffer)
+string File::tempPathFor(const string& filePath)
 {
-    ofstream file(path.c_str());
-    if (file.is_open()) {
-        file << buffer;
-        file.close();
-    } else {
+    string dir, name;
+    if (!splitPath(filePath, dir, name))
+        return "";
+    return File::join(dir, "." + name + ".tmp");
+}
+
+bool File::writeFile(const string& filePath, const string& buffer)
+{
+    string dir, name;
+    if (!splitPath(filePath, dir, name)) {
+        errno = EINVAL;
         return false;
     }
+    const string tempName = "." + name + ".tmp";
+
+    // Only the last component is not followed: the directory itself may well be
+    // reached through a symlink (/tmp -> /var/tmp on oe-core).
+    const int dirFd = open(dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (dirFd < 0)
+        return false;
+
+    mode_t mode = 0644;
+    bool exists = false;
+    struct stat current;
+    if (fstatat(dirFd, name.c_str(), &current, AT_SYMLINK_NOFOLLOW) == 0) {
+        if (S_ISLNK(current.st_mode)) {
+            closeKeepingErrno(dirFd);
+            errno = ELOOP;
+            return false;
+        }
+        if (!S_ISREG(current.st_mode)) {
+            closeKeepingErrno(dirFd);
+            errno = EINVAL;
+            return false;
+        }
+        mode = current.st_mode & 0755;
+        exists = true;
+    } else if (errno != ENOENT) {
+        closeKeepingErrno(dirFd);
+        return false;
+    }
+
+    // A leftover from a crash, or something planted there: unlinkat() removes a
+    // symlink itself, never what it points to. If the name is taken again before
+    // the open, O_EXCL | O_NOFOLLOW fails rather than write through it.
+    if (unlinkat(dirFd, tempName.c_str(), 0) != 0 && errno != ENOENT) {
+        closeKeepingErrno(dirFd);
+        return false;
+    }
+    const int fd = openat(dirFd, tempName.c_str(),
+                          O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, mode);
+    if (fd < 0) {
+        closeKeepingErrno(dirFd);
+        return false;
+    }
+
+    // fchmod() so that an existing file's mode is kept as it was, not less the umask.
+    bool ok = (!exists || fchmod(fd, mode) == 0) && writeAll(fd, buffer) && fsync(fd) == 0;
+    if (close(fd) != 0)
+        ok = false;
+    // rename() replaces whatever is at name, a symlink included, and never
+    // follows it.
+    if (ok && renameat(dirFd, tempName.c_str(), dirFd, name.c_str()) != 0)
+        ok = false;
+    if (!ok) {
+        const int saved = errno;
+        unlinkat(dirFd, tempName.c_str(), 0);
+        close(dirFd);
+        errno = saved;
+        return false;
+    }
+    // Make the rename itself durable. Failing here does not undo it.
+    (void) fsync(dirFd);
+    close(dirFd);
+    return true;
+}
+
+bool File::readStateFile(const string& path, string& contents)
+{
+    contents.clear();
+
+    // O_NONBLOCK so that a FIFO in its place cannot stall SAM in open().
+    const int fd = open(path.c_str(), O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NOCTTY | O_NONBLOCK);
+    if (fd < 0)
+        return false;
+
+    struct stat info;
+    if (fstat(fd, &info) != 0) {
+        closeKeepingErrno(fd);
+        return false;
+    }
+    if (!S_ISREG(info.st_mode)) {
+        close(fd);
+        errno = EINVAL;
+        return false;
+    }
+    if (info.st_uid != geteuid() || (info.st_mode & (S_IWGRP | S_IWOTH)) != 0) {
+        close(fd);
+        errno = EPERM;
+        return false;
+    }
+
+    char chunk[4096];
+    for (;;) {
+        const ssize_t got = ::read(fd, chunk, sizeof(chunk));
+        if (got < 0) {
+            if (errno == EINTR)
+                continue;
+            closeKeepingErrno(fd);
+            contents.clear();
+            return false;
+        }
+        if (got == 0)
+            break;
+        contents.append(chunk, static_cast<size_t>(got));
+    }
+    close(fd);
     return true;
 }
 

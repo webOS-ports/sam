@@ -18,6 +18,9 @@
 
 #include "RuntimeInfo.h"
 
+#include <errno.h>
+#include <string.h>
+
 SAMConf::SAMConf()
     : m_isRespawned(false),
       m_isDevmodeEnabled(false),
@@ -37,7 +40,10 @@ void SAMConf::initialize()
     loadBlockedList();
 
     // TODO this should be moved in RuntimeInfo
-    m_isRespawned = File::isFile(this->getRespawnedPath());
+    // The marker is only believed if SAM wrote it: not through a symlink, and
+    // not a file someone else left in /tmp.
+    string marker;
+    m_isRespawned = File::readStateFile(this->getRespawnedPath(), marker);
 
     if (File::isFile(this->getDevModePath()))
         m_isDevmodeEnabled = true;
@@ -47,7 +53,8 @@ void SAMConf::initialize()
 
     if (!m_isRespawned) {
         if (!File::createFile(this->getRespawnedPath())) {
-            Logger::info(getClassName(), __FUNCTION__, "Failed to create respawned file");
+            Logger::info(getClassName(), __FUNCTION__, this->getRespawnedPath(),
+                         "Failed to create respawned file", strerror(errno));
         }
     }
 
@@ -75,7 +82,14 @@ void SAMConf::loadReadWriteConf()
     } else {
         path = PATH_RW_SAM_CONF;
     }
-    m_readWriteDatabase = JDomParser::fromFile(path.c_str());
+    string contents;
+    if (File::readStateFile(path, contents)) {
+        m_readWriteDatabase = JDomParser::fromString(contents);
+    } else {
+        if (errno != ENOENT)
+            Logger::warning(getClassName(), __FUNCTION__, path, "Ignoring read-write sam-conf", strerror(errno));
+        m_readWriteDatabase = JValue();
+    }
     if (m_readWriteDatabase.isNull()) {
         m_readWriteDatabase = pbnjson::Object();
         saveReadWriteConf();
@@ -93,7 +107,7 @@ void SAMConf::saveReadWriteConf()
     }
 
     if (!File::writeFile(path, m_readWriteDatabase.stringify("    ").c_str())) {
-        Logger::warning(getClassName(), __FUNCTION__, PATH_RO_SAM_CONF, "Failed to save read-write sam-conf");
+        Logger::warning(getClassName(), __FUNCTION__, path, "Failed to save read-write sam-conf", strerror(errno));
     }
 }
 
