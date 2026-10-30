@@ -105,6 +105,11 @@ public:
     static void logSubscriptionPost(const string& className, const string& functionName, const LS::SubscriptionPoint& point, JValue& subscriptionPayload);
     static void logSubscriptionPost(const string& className, const string& functionName, const string& key, JValue& subscriptionPayload);
 
+    // A debug message as one line of text, laid out as the console output
+    // lays out every level: [class][function][who] what, then the detail on
+    // a line of its own. Only text: a '%' in any part stays a '%'.
+    static string debugText(const string& className, const string& functionName, const string& who, const string& what, const string& detail);
+
     static void debug(const string& className, const string& functionName, const string& what);
     static void info(const string& className, const string& functionName, const string& what);
     static void warning(const string& className, const string& functionName, const string& what);
