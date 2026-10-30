@@ -31,6 +31,7 @@ SchemaChecker::SchemaChecker()
     m_APISchemaFiles[ApplicationManager::METHOD_GET_FOREGROUND_APPINFO] = "applicationManager.getForegroundAppInfo";
     m_APISchemaFiles[ApplicationManager::METHOD_LOCK_APP] = "applicationManager.lockApp";
     m_APISchemaFiles[ApplicationManager::METHOD_REGISTER_APP] = "applicationManager.registerApp";
+    m_APISchemaFiles[ApplicationManager::METHOD_SCAN_APP] = "applicationManager.scanApp";
     m_APISchemaFiles[ApplicationManager::METHOD_LIST_APPS] = "applicationManager.listApps";
     m_APISchemaFiles[ApplicationManager::METHOD_GET_APP_STATUS] = "applicationManager.getAppStatus";
     m_APISchemaFiles[ApplicationManager::METHOD_GET_APP_INFO] = "applicationManager.getAppInfo";

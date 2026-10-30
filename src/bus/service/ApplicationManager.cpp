@@ -46,6 +46,7 @@ const char* ApplicationManager::METHOD_GET_FOREGROUND_APPINFO = "getForegroundAp
 const char* ApplicationManager::METHOD_LOCK_APP = "lockApp";
 const char* ApplicationManager::METHOD_REGISTER_APP = "registerApp";
 const char* ApplicationManager::METHOD_REGISTER_NATIVE_APP = "registerNativeApp";
+const char* ApplicationManager::METHOD_SCAN_APP = "scanApp";
 
 const char* ApplicationManager::METHOD_LIST_APPS = "listApps";
 const char* ApplicationManager::METHOD_GET_APP_STATUS = "getAppStatus";
@@ -71,6 +72,7 @@ LSMethod ApplicationManager::METHODS_ROOT[] = {
     { METHOD_LOCK_APP,                 ApplicationManager::onAPICalled, LUNA_METHOD_FLAGS_NONE },
     { METHOD_REGISTER_APP,             ApplicationManager::onAPICalled, LUNA_METHOD_FLAGS_NONE },
     { METHOD_REGISTER_NATIVE_APP,      ApplicationManager::onAPICalled, LUNA_METHOD_FLAGS_NONE },
+    { METHOD_SCAN_APP,                 ApplicationManager::onAPICalled, LUNA_METHOD_FLAGS_NONE },
 
     // core: package
     { METHOD_LIST_APPS,                ApplicationManager::onAPICalled, LUNA_METHOD_FLAGS_NONE },
@@ -163,6 +165,7 @@ ApplicationManager::ApplicationManager()
     registerApiHandler(CATEGORY_ROOT, METHOD_LOCK_APP, boost::bind(&ApplicationManager::lockApp, this, boost::placeholders::_1));
     registerApiHandler(CATEGORY_ROOT, METHOD_REGISTER_APP, boost::bind(&ApplicationManager::registerApp, this, boost::placeholders::_1));
     registerApiHandler(CATEGORY_ROOT, METHOD_REGISTER_NATIVE_APP, boost::bind(&ApplicationManager::registerApp, this, boost::placeholders::_1));
+    registerApiHandler(CATEGORY_ROOT, METHOD_SCAN_APP, boost::bind(&ApplicationManager::scanApp, this, boost::placeholders::_1));
 
     registerApiHandler(CATEGORY_ROOT, METHOD_LIST_APPS, boost::bind(&ApplicationManager::listApps, this, boost::placeholders::_1));
     registerApiHandler(CATEGORY_ROOT, METHOD_GET_APP_STATUS, boost::bind(&ApplicationManager::getAppStatus, this, boost::placeholders::_1));
@@ -541,6 +544,44 @@ void ApplicationManager::getAppInfo(LunaTaskPtr lunaTask)
 
     lunaTask->getResponsePayload().put("appInfo", appInfo);
     lunaTask->getResponsePayload().put("appId", appId);
+    LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
+}
+
+// Picks up applications whose folders were written or removed by something
+// other than appinstalld, which would otherwise only be seen by a restart of
+// SAM - and a restart of SAM ends every application it runs. Each id is
+// scanned as appinstalld's install and remove events are: added or updated if
+// its folder is there, removed if it is gone.
+void ApplicationManager::scanApp(LunaTaskPtr lunaTask)
+{
+    const pbnjson::JValue& requestPayload = lunaTask->getRequestPayload();
+    const pbnjson::JValue appIds = requestPayload["appIds"];
+
+    if (!appIds.isArray() || appIds.arraySize() == 0) {
+        lunaTask->setErrCodeAndText(ErrCode_GENERAL, "appIds must be a non-empty array");
+        LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
+        return;
+    }
+    // Check all of them first, so a bad request changes nothing.
+    for (int i = 0; i < appIds.arraySize(); i++) {
+        if (!appIds[i].isString() || !AppDescriptionList::isScannableAppId(appIds[i].asString())) {
+            lunaTask->setErrCodeAndText(ErrCode_GENERAL, "Invalid appId specified: " + appIds[i].stringify());
+            LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
+            return;
+        }
+    }
+
+    pbnjson::JValue apps = pbnjson::Array();
+    for (int i = 0; i < appIds.arraySize(); i++) {
+        const string appId = appIds[i].asString();
+        AppDescriptionList::getInstance().scanApp(appId);
+
+        pbnjson::JValue app = pbnjson::Object();
+        app.put("appId", appId);
+        app.put("installed", AppDescriptionList::getInstance().isExist(appId));
+        apps.append(app);
+    }
+    lunaTask->getResponsePayload().put("apps", apps);
     LunaTaskList::getInstance().removeAfterReply(std::move(lunaTask));
 }
 

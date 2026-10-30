@@ -1,0 +1,17 @@
+{
+    "id": "applicationManager.scanApp",
+    "type": "object",
+    "properties": {
+        "appIds": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "string"
+            },
+            "description": "Applications to scan again: each is added or updated if its folder is in an application path, and removed if it is not."
+        }
+    },
+    "required": [
+        "appIds"
+    ]
+}
