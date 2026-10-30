@@ -153,7 +153,7 @@ TEST_F(AppDescriptionListFindAppTest, FindsAnAppWrittenAfterStartup)
     EXPECT_EQ(nullptr, AppDescriptionList::findApp("waydroid.com.example", applicationPaths));
 
     writeApp("store", "waydroid.com.example", "1.0.0");
-    AppDescriptionPtr appDesc = AppDescriptionList::findApp("waydroid.com.example", applicationPaths);
+    const AppDescriptionPtr appDesc = AppDescriptionList::findApp("waydroid.com.example", applicationPaths);
     ASSERT_NE(nullptr, appDesc);
     EXPECT_EQ("waydroid.com.example", appDesc->getAppId());
     EXPECT_EQ(m_tree.path("store/waydroid.com.example"), appDesc->getFolderPath());
@@ -175,7 +175,7 @@ TEST_F(AppDescriptionListFindAppTest, TheLastPathThatHasTheAppWins)
 {
     writeApp("builtin", "com.example.both", "1.0.0");
     writeApp("store", "com.example.both", "2.0.0");
-    AppDescriptionPtr appDesc = AppDescriptionList::findApp(
+    const AppDescriptionPtr appDesc = AppDescriptionList::findApp(
         "com.example.both", paths({{"builtin", "system_builtin"}, {"store", "store"}}));
     ASSERT_NE(nullptr, appDesc);
     EXPECT_EQ(m_tree.path("store/com.example.both"), appDesc->getFolderPath());
