@@ -57,7 +57,12 @@ public:
 
     static bool isDirectory(const string& path);
     static bool isFile(const string& path);
+
+    // mkdir -p for a directory SAM keeps state in. Fails, with errno set, if path
+    // itself is a symlink (ELOOP) or not a directory (ENOTDIR). As in writeFile(),
+    // the parents may be reached through a symlink.
     static bool makeDirectory(const string& path);
+
     static bool createFile(const string& path);
     static bool deleteFile(const string& path);
 

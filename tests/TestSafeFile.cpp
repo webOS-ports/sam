@@ -488,6 +488,35 @@ protected:
     string m_previousHome;
 };
 
+TEST_F(SAMConfSymlinkTest, ASymlinkedConfigDirectoryIsNeitherReadNorWrittenThrough)
+{
+    const string elsewhere = m_tree.mkdirs("elsewhere");
+    const string planted = m_tree.write("elsewhere/sam-conf.json", "{\"language\": \"planted\"}");
+    // Whatever the umask: a file readStateFile() would accept, were it reached.
+    ASSERT_EQ(0, chmod(planted.c_str(), 0600));
+    const string dot = m_tree.path(".config");
+    ASSERT_EQ(0, symlink(elsewhere.c_str(), dot.c_str()));
+
+    SAMConf::getInstance().initialize();
+    EXPECT_EQ("", SAMConf::getInstance().getLanguage());
+
+    SAMConf::getInstance().setLocale("en", "", "US");
+    EXPECT_EQ("en", SAMConf::getInstance().getLanguage());
+    EXPECT_EQ("{\"language\": \"planted\"}", File::readFile(planted));
+}
+
+TEST_F(SAMConfSymlinkTest, AnEmptyDirectoryBehindASymlinkGetsNoConfig)
+{
+    const string elsewhere = m_tree.mkdirs("elsewhere");
+    const string dot = m_tree.path(".config");
+    ASSERT_EQ(0, symlink(elsewhere.c_str(), dot.c_str()));
+
+    SAMConf::getInstance().initialize();
+    SAMConf::getInstance().setLocale("en", "", "US");
+
+    EXPECT_FALSE(File::isFile(elsewhere + "/sam-conf.json"));
+}
+
 TEST_F(SAMConfSymlinkTest, ASymlinkedConfigIsNeitherReadNorWrittenThrough)
 {
     const string victim = m_tree.write("victim.json", "{\"language\": \"planted\"}");

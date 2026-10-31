@@ -83,7 +83,7 @@ regression shows up as a failing test rather than as a field report:
 | `LocalizedAppinfoTest` | Which `resources/<language>[/<script>][/<region>]` overlays a scan applies, and that a legacy relative `main` is re-anchored exactly once. |
 | `SafeFileTest` | `File::writeFile()` never follows a symlink, at the target or at its temporary name, dangling or not; replaces by rename, so a failed write leaves the old file whole; keeps an existing file's mode without group/other write. `readStateFile()` refuses symlinks, FIFOs and files SAM does not own or others can write; native-app logs are not opened through a symlink. |
 | `NativeLogPathTest` | A native app's log name cannot leave `/var/log`: an id or user with `/` or `..` is refused. |
-| `SAMConfSymlinkTest` | A symlink at the read-write `sam-conf.json` is neither read nor written through (the audit's "truncated to `{}`"). |
+| `SAMConfSymlinkTest` | A symlink at the read-write `sam-conf.json`, or at `$HOME/.config` above it, is neither read nor written through (the audit's "truncated to `{}`"). |
 | `SignalHandlerTest` | That signals arrive as main-loop events and not through a handler: no `sigaction` handler installed, the handled set blocked, `SIGPIPE` left at `SIG_IGN`, and a raised `SIGTERM` read back off the signalfd instead of killing the process. |
 | `LunaTaskTest` | `hasErrorCallback()` reports the error callback, not the success one. It tested the wrong member, so `PolicyManager::pre()` never set a default error callback and a failed close was never answered. |
 
