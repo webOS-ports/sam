@@ -269,9 +269,30 @@ bool File::isFile(const string& path)
 
 bool File::makeDirectory(const string& path)
 {
-    if (g_mkdir_with_parents(path.c_str(), 0700) == 0)
-        return true;
-    return false;
+    string target = path;
+    while (target.size() > 1 && target.back() == '/')
+        target.pop_back();
+
+    const size_t slash = target.find_last_of('/');
+    if (slash != string::npos && slash != 0 &&
+        g_mkdir_with_parents(target.substr(0, slash).c_str(), 0700) != 0) {
+        return false;
+    }
+    if (mkdir(target.c_str(), 0700) != 0 && errno != EEXIST)
+        return false;
+
+    struct stat info;
+    if (lstat(target.c_str(), &info) != 0)
+        return false;
+    if (S_ISLNK(info.st_mode)) {
+        errno = ELOOP;
+        return false;
+    }
+    if (!S_ISDIR(info.st_mode)) {
+        errno = ENOTDIR;
+        return false;
+    }
+    return true;
 }
 
 bool File::createFile(const string& path)
