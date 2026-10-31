@@ -7,10 +7,12 @@
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
+#include <dirent.h>
 #include <fcntl.h>
 #include <string>
 #include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "TempTree.h"
@@ -43,6 +45,18 @@ protected:
     {
         struct stat info;
         return lstat(path.c_str(), &info) == 0;
+    }
+
+    static int openDescriptors()
+    {
+        DIR* dir = opendir("/proc/self/fd");
+        if (dir == nullptr)
+            return -1;
+        int count = 0;
+        while (readdir(dir) != nullptr)
+            ++count;
+        closedir(dir);
+        return count;
     }
 
     static mode_t currentUmask()
@@ -398,6 +412,52 @@ TEST_F(SafeFileTest, NativeAppLogIsCreated)
     process.closeStdFd();
 
     EXPECT_TRUE(File::isFile(log));
+}
+
+// closeStdFd() twice must not close whatever got the descriptor number in between.
+TEST_F(SafeFileTest, ClosingTheNativeAppLogTwiceClosesItOnce)
+{
+    NativeProcess process;
+    process.openStdFile(m_tree.path("com.example.app-2"));
+    process.closeStdFd();
+
+    const int other = open(m_tree.write("other", "").c_str(), O_RDONLY | O_CLOEXEC);
+    ASSERT_GE(other, 0);
+    process.closeStdFd();
+    EXPECT_NE(-1, fcntl(other, F_GETFD));
+    close(other);
+}
+
+// SAM must not keep a descriptor per launched app: the app holds its own copy.
+TEST_F(SafeFileTest, SpawningClosesTheNativeAppLogInTheParent)
+{
+    const string log = m_tree.path("com.example.app-3");
+    const int before = openDescriptors();
+
+    NativeProcess process;
+    process.setCommand("/bin/sh");
+    process.addArgument("-c");
+    process.addArgument("echo out; echo err >&2");
+    process.openStdFile(log);
+    ASSERT_EQ(before + 1, openDescriptors());
+    ASSERT_TRUE(process.run());
+    EXPECT_EQ(before, openDescriptors());
+
+    int status = 0;
+    ASSERT_EQ(process.getPid(), waitpid(process.getPid(), &status, 0));
+    EXPECT_TRUE(WIFEXITED(status));
+    EXPECT_EQ("out\nerr\n", File::readFile(log));
+}
+
+TEST_F(SafeFileTest, AFailedSpawnClosesTheNativeAppLogToo)
+{
+    const int before = openDescriptors();
+
+    NativeProcess process;
+    process.setCommand(m_tree.path("no-such-binary"));
+    process.openStdFile(m_tree.path("com.example.app-4"));
+    EXPECT_FALSE(process.run());
+    EXPECT_EQ(before, openDescriptors());
 }
 
 // The read-write sam-conf.json, through SAMConf itself: a symlink there must
