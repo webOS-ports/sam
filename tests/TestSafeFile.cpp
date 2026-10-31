@@ -19,7 +19,7 @@
 #include "util/File.h"
 #include "util/NativeProcess.h"
 
-// SAM runs as root and writes its state into /var/preferences and /tmp. These
+// SAM runs as root and writes its state into /var/preferences and /run/sam. These
 // guard File::writeFile() and File::readStateFile() against the symlink tricks
 // that let anyone who can write to such a directory make root truncate or
 // overwrite a file of their choosing, and check that a replacement is atomic.
@@ -54,6 +54,14 @@ protected:
 
     TempTree m_tree;
 };
+
+// sam.service creates /run/sam (root, 0700) and sam.sh tests the marker there, in
+// another repository: these names must not drift back to a world-writable /tmp.
+TEST(StatePathTest, StateLivesInTheRootOnlyRunDirectory)
+{
+    EXPECT_STREQ("/run/sam/sam_runtime", PATH_RUNTIME_INFO);
+    EXPECT_EQ("/run/sam/sam-respawned", SAMConf::getInstance().getRespawnedPath());
+}
 
 TEST_F(SafeFileTest, TempPathSitsNextToTheTarget)
 {
