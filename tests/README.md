@@ -75,7 +75,8 @@ regression shows up as a failing test rather than as a field report:
 | --- | --- |
 | `JValueUtilTest` | `getValue()` never writes its out-parameter on a failure path. Three uninitialized-read defects came from callers assuming it did. |
 | `LoggerFormatTest` | `format()` is reentrant and does not truncate. It used to build results in a shared `static char[1024]`. |
-| `FileTest` | `join`/`trimPath`/`concatToFilename` edge cases and the stat-based predicates. |
+| `LoggerPmlogTest` | A debug line's detail is logged as text, not used as PmLog's format string. |
+| `FileTest` | `join`/`trimPath`/`concatToFilename` edge cases, the stat-based predicates, and `makeDirectory()` refusing a symlink. |
 | `AnchorLocalePathTest` | Both localized-appinfo conventions, which wins when both resolve, and that the result is never absolute. |
 | `AppDescriptionScanTest` | Version parsing against a third-party `appinfo.json`, including versions that used to throw out of the scan. |
 | `AppDescriptionCompareTest` | Version ordering and the `appLocation` tiebreak that a self-comparison had disabled. |

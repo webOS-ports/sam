@@ -4,7 +4,10 @@
 
 #include <gtest/gtest.h>
 
+#include <PmLogLib.h>
+
 #include <atomic>
+#include <cstdlib>
 #include <string>
 #include <thread>
 #include <vector>
@@ -16,6 +19,20 @@
 // was silently cut short.
 class LoggerFormatTest : public ::testing::Test {
 };
+
+// A debug line's detail used to be PmLog's format string. It carries text from
+// outside SAM, so conversions in it read and wrote through whatever was on the
+// stack. EXPECT_EXIT forks, so a crash is a test failure.
+TEST(LoggerPmlogTest, DebugDetailIsNotAFormatString)
+{
+    EXPECT_EXIT({
+        PmLogSetContextLevel(PmLogGetContextInline("SAM"), kPmLogLevel_Debug);
+        Logger::getInstance().setLevel(LogLevel_DEBUG);
+        Logger::getInstance().setType(LogType_PMLOG);
+        Logger::debug("LoggerPmlogTest", "test", "who", "what", "%s%s%s%s%s%s%s%s%s%s%n%n%n%n");
+        exit(0);
+    }, ::testing::ExitedWithCode(0), "");
+}
 
 TEST_F(LoggerFormatTest, FormatsTheOrdinaryCases)
 {

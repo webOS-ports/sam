@@ -233,7 +233,7 @@ void Logger::writePmlog(const enum LogLevel& level, const string& className, con
     // TODO handle empty who
     switch(level) {
     case LogLevel_DEBUG:
-        PmLogDebug(context, detail.c_str());
+        PmLogDebug(context, "%s", detail.c_str());
         break;
 
     case LogLevel_INFO:
