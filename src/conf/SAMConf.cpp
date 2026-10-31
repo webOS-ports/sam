@@ -40,8 +40,8 @@ void SAMConf::initialize()
     loadBlockedList();
 
     // TODO this should be moved in RuntimeInfo
-    // The marker is only believed if SAM wrote it: not through a symlink, and
-    // not a file someone else left in /tmp.
+    // The marker is only believed if SAM wrote it, wherever RespawnedPath points:
+    // not through a symlink, and not a file someone else left there.
     string marker;
     m_isRespawned = File::readStateFile(this->getRespawnedPath(), marker);
 

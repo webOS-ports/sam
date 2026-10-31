@@ -31,7 +31,11 @@ On target:
 
 Nothing here talks to the bus or touches system paths — `TempTree` gives each
 test its own directory under `/tmp`, and the fixtures that reach SAMConf point
-`$HOME` at it so its read-write config stays inside the sandbox.
+`$HOME` at it so its read-write config stays inside the sandbox. The exception
+is `RuntimeInfo` and the respawn marker, which use their fixed paths in
+`/run/sam`: without that directory, as on a build host, they log a warning and
+stay in memory. As root on a device they do reach the running SAM's files, so
+run the suite with `sam.service` stopped there.
 
 A cross-built x86-64 binary also runs on an x86-64 build host, because the
 Yocto sysroot ships its own loader:
