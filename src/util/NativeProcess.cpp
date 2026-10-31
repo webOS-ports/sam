@@ -13,6 +13,7 @@
 
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -140,6 +141,10 @@ bool NativeProcess::run()
     );
     // The child has its own copy now (or will never need it).
     closeStdFd();
+    for (char* argument : argv)
+        free(argument);
+    for (char* variable : envp)
+        free(variable);
     if (gerr) {
         Logger::error(CLASS_NAME, __FUNCTION__, gerr->message);
         g_error_free(gerr);
