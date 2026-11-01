@@ -102,7 +102,7 @@ public:
 
     string getRespawnedPath()
     {
-        string RespawnedPath = "/tmp/sam-respawned";
+        string RespawnedPath = "/run/sam/sam-respawned";
         JValueUtil::getValue(m_readOnlyDatabase, "RespawnedPath", RespawnedPath);
         return RespawnedPath;
     }

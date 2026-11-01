@@ -101,6 +101,16 @@ void NativeContainer::initialize()
     RuntimeInfo::getInstance().setValue(KEY_NATIVE_RUNNING_APPS, m_nativeRunninApps);
 }
 
+bool NativeContainer::getLogPath(const string& appId, const string& user, int instance, string& path)
+{
+    const string name = user.empty() ? Logger::format("%s-%d", appId.c_str(), instance)
+                                     : Logger::format("%s-%s-%d", appId.c_str(), user.c_str(), instance);
+    if (appId.empty() || name.find('/') != string::npos || name.find("..") != string::npos)
+        return false;
+    path = File::join(PATH_NATIVE_LOG, name);
+    return true;
+}
+
 void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
 {
     const AppType type = runningApp->getLaunchPoint()->getAppDesc()->getAppType();
@@ -217,10 +227,15 @@ void NativeContainer::launch(RunningAppPtr runningApp, LunaTaskPtr lunaTask)
     }
 
     runningApp->setLS2Name(Logger::format("%s-%d", runningApp->getAppId().c_str(), s_instanceCounter));
-    if (RuntimeInfo::getInstance().getUser().empty())
-        runningApp->getLinuxProcess().openStdFile(Logger::format("/var/log/%s-%d", runningApp->getAppId().c_str(), s_instanceCounter++));
-    else
-        runningApp->getLinuxProcess().openStdFile(Logger::format("/var/log/%s-%s-%d", runningApp->getAppId().c_str(), RuntimeInfo::getInstance().getUser().c_str(), s_instanceCounter++));
+    string logPath;
+    if (!getLogPath(runningApp->getAppId(), RuntimeInfo::getInstance().getUser(), s_instanceCounter++, logPath)) {
+        Logger::error(getClassName(), __FUNCTION__, runningApp->getAppId(), "Refusing an unsafe app id");
+        RunningAppList::getInstance().removeByObject(runningApp);
+        lunaTask->setErrCodeAndText(ErrCode_LAUNCH, "Invalid app id");
+        lunaTask->error(lunaTask);
+        return;
+    }
+    runningApp->getLinuxProcess().openStdFile(logPath);
 
     runningApp->setLifeStatus(LifeStatus::LifeStatus_LAUNCHING);
 
