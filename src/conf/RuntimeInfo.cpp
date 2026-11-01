@@ -16,7 +16,9 @@
 
 #include "RuntimeInfo.h"
 
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -79,7 +81,7 @@ bool RuntimeInfo::setValue(const string& key, JValue& value)
 bool RuntimeInfo::save()
 {
     if (!File::writeFile(PATH_RUNTIME_INFO, m_database.stringify("    "))) {
-        Logger::warning(getClassName(), __FUNCTION__, PATH_RUNTIME_INFO, "Failed to save RuntimeInfo");
+        Logger::warning(getClassName(), __FUNCTION__, PATH_RUNTIME_INFO, "Failed to save RuntimeInfo", strerror(errno));
         return false;
     }
     return true;
@@ -87,7 +89,16 @@ bool RuntimeInfo::save()
 
 bool RuntimeInfo::load()
 {
-    m_database = JDomParser::fromFile(PATH_RUNTIME_INFO);
+    // /tmp is world-writable: only trust a file SAM wrote itself, since it lists
+    // process ids SAM will later kill.
+    string contents;
+    if (File::readStateFile(PATH_RUNTIME_INFO, contents)) {
+        m_database = JDomParser::fromString(contents);
+    } else {
+        if (errno != ENOENT)
+            Logger::warning(getClassName(), __FUNCTION__, PATH_RUNTIME_INFO, "Ignoring RuntimeInfo", strerror(errno));
+        m_database = JValue();
+    }
     if (m_database.isNull()) {
         m_database = pbnjson::Object();
         save();

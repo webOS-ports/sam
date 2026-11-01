@@ -87,7 +87,12 @@ void NativeProcess::openStdFile(const string& stdFile)
 {
     closeStdFd();
     m_stdFile = stdFile;
-    m_stdFd = ::open(stdFile.c_str(), O_CREAT | O_RDWR | O_TRUNC, 0644);
+    // SAM is root: never follow a symlink planted at the log name. O_CLOEXEC
+    // keeps it out of other children; g_spawn dup2()s it onto the app's own
+    // stdout and stderr, which clears the flag there.
+    m_stdFd = ::open(stdFile.c_str(), O_CREAT | O_RDWR | O_TRUNC | O_NOFOLLOW | O_CLOEXEC | O_NOCTTY, 0644);
+    if (m_stdFd < 0)
+        Logger::warning(CLASS_NAME, __FUNCTION__, stdFile, "Failed to open the log file", strerror(errno));
 }
 
 void NativeProcess::closeStdFd()
