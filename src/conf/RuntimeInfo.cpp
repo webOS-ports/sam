@@ -89,8 +89,8 @@ bool RuntimeInfo::save()
 
 bool RuntimeInfo::load()
 {
-    // /tmp is world-writable: only trust a file SAM wrote itself, since it lists
-    // process ids SAM will later kill.
+    // Only trust a file SAM wrote itself, since it lists process ids SAM will
+    // later kill.
     string contents;
     if (File::readStateFile(PATH_RUNTIME_INFO, contents)) {
         m_database = JDomParser::fromString(contents);

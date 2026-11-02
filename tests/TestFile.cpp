@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <cerrno>
+
 #include "TempTree.h"
 #include "util/File.h"
 
@@ -111,4 +113,59 @@ TEST_F(FileTest, MakeDirectoryCreatesParents)
 
     EXPECT_TRUE(File::makeDirectory(nested));
     EXPECT_TRUE(File::isDirectory(nested));
+}
+
+TEST_F(FileTest, MakeDirectoryAcceptsAnExistingDirectoryAndATrailingSlash)
+{
+    const string dir = m_tree.mkdirs("existing");
+
+    EXPECT_TRUE(File::makeDirectory(dir));
+    EXPECT_TRUE(File::makeDirectory(dir + "/"));
+    EXPECT_TRUE(File::makeDirectory(m_tree.path("fresh/")));
+    EXPECT_TRUE(File::isDirectory(m_tree.path("fresh")));
+}
+
+TEST_F(FileTest, MakeDirectoryIsPrivate)
+{
+    const string dir = m_tree.path("private");
+
+    ASSERT_TRUE(File::makeDirectory(dir));
+    struct stat info;
+    ASSERT_EQ(0, stat(dir.c_str(), &info));
+    EXPECT_EQ(0u, info.st_mode & 077);
+}
+
+TEST_F(FileTest, MakeDirectoryRefusesASymlinkToADirectory)
+{
+    const string target = m_tree.mkdirs("elsewhere");
+    const string link = m_tree.path("link");
+    ASSERT_EQ(0, symlink(target.c_str(), link.c_str()));
+
+    errno = 0;
+    EXPECT_FALSE(File::makeDirectory(link));
+    EXPECT_EQ(ELOOP, errno);
+    errno = 0;
+    EXPECT_FALSE(File::makeDirectory(link + "/"));
+    EXPECT_EQ(ELOOP, errno);
+}
+
+TEST_F(FileTest, MakeDirectoryRefusesADanglingSymlink)
+{
+    const string target = m_tree.path("not-there");
+    const string link = m_tree.path("link");
+    ASSERT_EQ(0, symlink(target.c_str(), link.c_str()));
+
+    errno = 0;
+    EXPECT_FALSE(File::makeDirectory(link));
+    EXPECT_EQ(ELOOP, errno);
+    EXPECT_FALSE(File::isDirectory(target));
+}
+
+TEST_F(FileTest, MakeDirectoryRefusesAFile)
+{
+    const string file = m_tree.write("plain", "");
+
+    errno = 0;
+    EXPECT_FALSE(File::makeDirectory(file));
+    EXPECT_EQ(ENOTDIR, errno);
 }

@@ -40,8 +40,8 @@ void SAMConf::initialize()
     loadBlockedList();
 
     // TODO this should be moved in RuntimeInfo
-    // The marker is only believed if SAM wrote it: not through a symlink, and
-    // not a file someone else left in /tmp.
+    // The marker is only believed if SAM wrote it, wherever RespawnedPath points:
+    // not through a symlink, and not a file someone else left there.
     string marker;
     m_isRespawned = File::readStateFile(this->getRespawnedPath(), marker);
 
@@ -77,7 +77,11 @@ void SAMConf::loadReadWriteConf()
 
     if (!RuntimeInfo::getInstance().getHome().empty()) {
         path = RuntimeInfo::getInstance().getHome() + "/.config";
-        File::makeDirectory(path);
+        if (!File::makeDirectory(path)) {
+            Logger::warning(getClassName(), __FUNCTION__, path, "Keeping read-write sam-conf in memory", strerror(errno));
+            m_readWriteDatabase = pbnjson::Object();
+            return;
+        }
         path += "/sam-conf.json";
     } else {
         path = PATH_RW_SAM_CONF;
@@ -101,7 +105,12 @@ void SAMConf::saveReadWriteConf()
     string path = "";
 
     if (!RuntimeInfo::getInstance().getHome().empty()) {
-        path = RuntimeInfo::getInstance().getHome() + "/.config/sam-conf.json";
+        path = RuntimeInfo::getInstance().getHome() + "/.config";
+        if (!File::makeDirectory(path)) {
+            Logger::warning(getClassName(), __FUNCTION__, path, "Failed to save read-write sam-conf", strerror(errno));
+            return;
+        }
+        path += "/sam-conf.json";
     } else {
         path = PATH_RW_SAM_CONF;
     }

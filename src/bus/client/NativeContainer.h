@@ -36,6 +36,11 @@ friend class ISingleton<NativeContainer>;
 public:
     static void onKillChildProcess(GPid pid, gint status, gpointer data);
 
+    // The file a native app's output goes to. Fails if appId is empty, or if
+    // appId or user holds a '/' or "..": SAM is root, and nothing else stops an
+    // id from naming a path outside the log directory.
+    static bool getLogPath(const string& appId, const string& user, int instance, string& path);
+
     virtual ~NativeContainer() override;
 
     virtual void initialize();
