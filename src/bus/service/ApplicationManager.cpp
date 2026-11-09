@@ -262,6 +262,9 @@ void ApplicationManager::launch(LunaTaskPtr lunaTask)
             lunaTask->setParams(std::move(params));
         }
     }
+    // After the launch point's own params are in: an activity launch with no
+    // params of its own still gets them.
+    lunaTask->passActivityToParams();
 
     const RunningAppPtr runningApp = RunningAppList::getInstance().getByLunaTask(lunaTask, false);
     if (runningApp != nullptr) {

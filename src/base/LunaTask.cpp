@@ -42,3 +42,29 @@ void LunaTask::setDisplayId(const int displayId)
     }
     m_requestPayload["params"].put("displayAffinity", displayId);
 }
+
+/*
+ * The activity manager launches an application for an activity (a scheduled
+ * wakeup, a db watch) by calling launch with the activity's details as
+ * "$activity", beside "params" rather than in them. LunaSysMgr handed them on
+ * inside the launch parameters, creating those if there were none, and legacy
+ * applications read them there: Calendar's midnight relaunch completes and
+ * reschedules its calendar.updateIcon activity from params.$activity, and
+ * without it crashed and never ran again, leaving the launcher's day number
+ * stale. Do the same.
+ *
+ * An application's own params.$activity is left alone, as are params that
+ * are not an object, which have nowhere to put it.
+ */
+void LunaTask::passActivityToParams()
+{
+    if (!m_requestPayload.hasKey("$activity") || !m_requestPayload["$activity"].isObject())
+        return;
+
+    if (!m_requestPayload.hasKey("params"))
+        m_requestPayload.put("params", pbnjson::Object());
+    if (!m_requestPayload["params"].isObject() || m_requestPayload["params"].hasKey("$activity"))
+        return;
+
+    m_requestPayload["params"].put("$activity", m_requestPayload["$activity"].duplicate());
+}
