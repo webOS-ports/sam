@@ -141,6 +141,10 @@ public:
         m_requestPayload.put("params", params.duplicate());
     }
 
+    // Hands the activity manager's "$activity" on to the application.
+    // See LunaTask.cpp.
+    void passActivityToParams();
+
     void setErrCodeAndText(int errorCode, const string& errorText)
     {
         m_errorCode = errorCode;
